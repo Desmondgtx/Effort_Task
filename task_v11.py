@@ -26,8 +26,8 @@ FullScreenShow = True  # Pantalla completa automáticamente al iniciar el experi
 keys = [pygame.K_SPACE]  # Teclas elegidas para mano derecha o izquierda
 test_name = "PET"
 date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
-effort_levels = [50, 65, 80, 95]  # Changed from [20, 30, 40, 60, 70, 80]
-credits_levels = [2, 3, 4, 5]  # Changed from [2, 3, 4, 5, 6, 7]
+effort_levels = [50, 65, 80, 95]
+credits_levels = [2, 3, 4, 5]
 
 # block_type = division, total
 block_type = "division"
@@ -38,11 +38,9 @@ practice_iterations = 1
 decision_practice_trials = 4
 
 # MODIFICACIÓN 1: Cambiar a 3 bloques para tener 96 trials
-# Con 16 combinaciones (4 esfuerzo x 4 créditos), necesitamos 6 repeticiones (16*6=96)
-# Dividido en 3 bloques = 32 trials por bloque
-blocks_number = 3  # Changed from 2 to 3 for 96 trials total
+blocks_number = 3
 max_answer_time = 5  # MODIFICACIÓN 2: Tiempo para trabajar = 5 segundos
-max_decision_time = 5  # MODIFICACIÓN 3: Confirmado en 5 segundos
+max_decision_time = 5  # MODIFICACIÓN 3: Tiempo de decisión = 5 segundos
 max_resting_time = 5  # MODIFICACIÓN 2: Tiempo para descansar = 5 segundos
 
 optimal_square = [1, 2, 3, 4, 6, 8, 9, 12, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 35, 36, 40, 42, 45, 48, 49, 50]
@@ -66,7 +64,7 @@ def select_slide(slide_name):
             u"Se te indicará paso a paso qué hacer."
         ],
         'intro_block': [
-            u"Ahora comenzará el " + ("primer" if len(slide_name.split("_")) == 3 and slide_name.split("_")[2] == "1" else ("segundo" if slide_name.split("_")[2] == "2" else "tercer")) + " bloque del experimento",
+            #u"Ahora comenzará el " + ("primer" if len(slide_name.split("_")) == 3 and slide_name.split("_")[2] == "1" else ("segundo" if slide_name.split("_")[2] == "2" else "tercer")) + " bloque del experimento",
             " ",
             u"Puedes descansar unos segundos,",
             u"cuando te sientas listo presiona Espacio para continuar."
@@ -75,7 +73,7 @@ def select_slide(slide_name):
             u"Tarea de presionar la barra espaciadora:",
             " ",
             u"Abajo puedes encontrar un esquema de la tarea",
-            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos.",  # Actualizado a 5 segundos
+            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos.",
         ],
         'Interlude_Casillas': [
             u"¡Muy bien! AHORA INTENTA SUPERAR TU RENDIMIENTO"
@@ -119,10 +117,10 @@ def select_slide(slide_name):
             u"Si tardas más de {} segundos, se darán 0 créditos a ti o a la otra persona.".format(max_decision_time),
             " ",
             u"Si eliges trabajar para ganar más créditos,", 
-            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.",  # Actualizado a 5 segundos
+            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.",
             u"De lo contrario, no se otorgarán créditos para esa ronda.",
             " ",
-            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos."  # Actualizado a 5 segundos
+            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos."
         ],
         'Instructions_Decision_final': [
             u"Recuerda, en cada ronda:",
@@ -152,8 +150,8 @@ def select_slide(slide_name):
             u"Ahora comenzarás con la tarea principal.",
             " ",
             u"Recuerda que en cada ronda tendrás que tomar una decisión entre Descansar y Trabajar.",
-            u"Si eliges Trabajar, tendrás que rellenar la barra que se muestra en pantalla en 5 segundos.",  # Actualizado
-            u"Si eliges Descansar, podrás hacerlo durante 5 segundos."  # Actualizado
+            u"Si eliges Trabajar, tendrás que rellenar la barra que se muestra en pantalla en 5 segundos.",
+            u"Si eliges Descansar, podrás hacerlo durante 5 segundos."
         ],
         'TestingDecision': [
             u"Recordar que si no se toma ninguna decisión",
@@ -510,13 +508,6 @@ def draw_progress_bar(current_presses, total_presses, bar_width=100, bar_height=
     # Draw border
     pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 3)
     
-    # REMOVED: Draw progress text
-    # font = pygame.font.Font(None, 36)
-    # progress_text = f"{current_presses}/{total_presses}"
-    # text = font.render(progress_text, True, (0, 0, 0))
-    # text_rect = text.get_rect(centerx=center[0], top=bar_y + bar_height + 20)
-    # screen.blit(text, text_rect)
-    
     pygame.display.flip()
 
 
@@ -672,7 +663,7 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
     return presses_count, presses_count >= target_presses, first_press_time, last_press_time
 
 
-def take_decision(buttons_number, credits_number, title_text, max_time = 6, test = False, effort_level = None):
+def take_decision(buttons_number, credits_number, title_text, max_time = 5, test = False, effort_level = None):
     screen.fill(background)
 
     font = pygame.font.Font(None, 72)
@@ -857,7 +848,7 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 6, test
     return (selected_button, key_pressed, reaction_time)
 
 
-def show_resting(title_text, max_time = 10):
+def show_resting(title_text, max_time = 5):
 
     screen.fill(background)
     font = pygame.font.Font(None, 42)
@@ -920,14 +911,21 @@ def show_resting(title_text, max_time = 10):
 def task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, 
          test = False, decision_practice_trials = 1, file = None, effort_table = None):
 
-    last_list_cut = 0
-    actual_list_cut = len(self_combinations)//blocks_number
-
-    for _ in range(blocks_number):
+    # MODIFICACIÓN 1: Para 96 trials con 16 combinaciones, necesitamos 2 repeticiones por bloque
+    # 16 combinaciones * 2 repeticiones = 32 trials por bloque
+    # 32 trials * 3 bloques = 96 trials totales
+    repetitions_per_block = 2  # Nueva variable para repetir las combinaciones
+    
+    for block_num in range(blocks_number):
+        # Crear lista de combinaciones para este bloque con repeticiones
         if block_type == "division":
-            actual_combinations_list = self_combinations[last_list_cut:actual_list_cut] + other_combinations[last_list_cut:actual_list_cut]
+            # Usar todas las combinaciones en cada bloque con repeticiones
+            block_self_combinations = self_combinations * repetitions_per_block
+            block_other_combinations = other_combinations * repetitions_per_block
+            actual_combinations_list = block_self_combinations + block_other_combinations
         elif block_type == "total":
-            actual_combinations_list = self_combinations + other_combinations
+            # Usar todas las combinaciones en cada bloque con repeticiones
+            actual_combinations_list = (self_combinations + other_combinations) * repetitions_per_block
         else:
             print("Tipo de bloque no reconocido")
             break
@@ -956,7 +954,7 @@ def task(self_combinations, other_combinations, blocks_number, block_type, max_a
                         # if return is 1, the participant selected a credit button, else a resting button
                         selection, key_pressed, decision_reaction_time = take_decision(combination[0], combination[1], f"Créditos para {combination[2]}", max_time = max_decision_time, test =  test, effort_level = effort_level)
                 else:        
-                    show_resting(f"Créditos para {combination[2]}", max_time = 10)
+                    show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
                     # Initialize variables for no decision
                     presses_done = 0
                     target_reached = False
@@ -972,12 +970,12 @@ def task(self_combinations, other_combinations, blocks_number, block_type, max_a
                 earned_credits = combination[1]
                 if not target_reached:
                     earned_credits = 0
-                    show_resting(f"Créditos para {combination[2]}", max_time = 10)
+                    # No mostrar descanso adicional si no se completó la tarea
                 else:
                     pass
 
             elif selection == 2:
-                show_resting(f"Créditos para {combination[2]}", max_time = 10)
+                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
                 earned_credits = 1
                 # Initialize variables for resting trials
                 presses_done = 0
@@ -1006,16 +1004,13 @@ def task(self_combinations, other_combinations, blocks_number, block_type, max_a
                 if practice_count >= decision_practice_trials:
                     break
 
-        if not test:
-            slide(select_slide('Break'), False, K_SPACE)
-            last_list_cut = actual_list_cut
-            actual_list_cut += len(self_combinations)//blocks_number
-        else:
-            # If in test mode, we don't break after practice trials
-            last_list_cut = actual_list_cut
-            actual_list_cut += len(self_combinations)//blocks_number
+        if not test and block_num < blocks_number - 1:  # No mostrar break después del último bloque
+            slide(select_slide(f'intro_block_{block_num + 2}'), False, K_SPACE)  # Mostrar intro del siguiente bloque
+        elif test:
+            # En modo test, no hacer nada especial
+            pass
 
-        
+
 # Main Function
 def main():
     """Game's main loop"""
@@ -1049,8 +1044,8 @@ def main():
     # ------------------- calibration block ------------------------
     calibration_slide(select_slide('Instructions_Casillas'), K_SPACE, "testing_schema.jpg")
 
-    # First calibration: 100 presses
-    presses_count_1, _, _, _ = show_effort_bar(target_presses=110, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
+    # MODIFICACIÓN 4: Primera calibración cambiada de 110 a 50 pulsaciones
+    presses_count_1, _, _, _ = show_effort_bar(target_presses=50, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
 
     slide(select_slide('Interlude_Casillas'), False, K_SPACE)
 
@@ -1098,6 +1093,8 @@ def main():
     slide(select_slide('Effort_ending'), False, K_SPACE)
 
     task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, test = True, decision_practice_trials = decision_practice_trials, effort_table = effort_table)
+
+    slide(select_slide('Practice_ending'), False, K_SPACE)
 
     # ------------------------ Experiment Section -----------------------------
     # Experiment Starting
