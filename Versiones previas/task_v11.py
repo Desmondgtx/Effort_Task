@@ -64,7 +64,7 @@ def select_slide(slide_name):
             u"Se te indicará paso a paso qué hacer."
         ],
         'intro_block': [
-            #u"Ahora comenzará el " + ("primer" if len(slide_name.split("_")) == 3 and slide_name.split("_")[2] == "1" else ("segundo" if slide_name.split("_")[2] == "2" else "tercer")) + " bloque del experimento",
+            u"Ahora comenzará un bloque del experimento",
             " ",
             u"Puedes descansar unos segundos,",
             u"cuando te sientas listo presiona Espacio para continuar."
