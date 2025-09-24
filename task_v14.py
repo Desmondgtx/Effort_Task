@@ -4,7 +4,7 @@
 """
 tested in Python 3.10.9
 """
-import pygame, sys, os, cv2
+import pygame, sys, os, cv2, math
 from pygame.locals import FULLSCREEN, USEREVENT, KEYUP, K_SPACE, K_RETURN, K_ESCAPE, QUIT, Color, K_c, K_n, K_m
 from os.path import join
 from time import gmtime, strftime
@@ -26,8 +26,8 @@ FullScreenShow = True  # Pantalla completa automáticamente al iniciar el experi
 keys = [pygame.K_SPACE]  # Teclas elegidas para mano derecha o izquierda
 test_name = "PET"
 date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
-effort_levels = [50, 65, 80, 95]  # Changed from [20, 30, 40, 60, 70, 80]
-credits_levels = [2, 3, 4, 5]  # Changed from [2, 3, 4, 5, 6, 7]
+effort_levels = [50, 65, 80, 95]
+credits_levels = [2, 3, 4, 5]
 
 # block_type = division, total
 block_type = "division"
@@ -35,14 +35,12 @@ block_type = "division"
 min_buttons = 10
 
 practice_iterations = 1
-decision_practice_trials = 4
+decision_practice_trials = 2  # Cambiado de 4 a 2 trials de práctica
 
 # MODIFICACIÓN 1: Cambiar a 3 bloques para tener 96 trials
-# Con 16 combinaciones (4 esfuerzo x 4 créditos), necesitamos 6 repeticiones (16*6=96)
-# Dividido en 3 bloques = 32 trials por bloque
-blocks_number = 3  # Changed from 2 to 3 for 96 trials total
+blocks_number = 3
 max_answer_time = 5  # MODIFICACIÓN 2: Tiempo para trabajar = 5 segundos
-max_decision_time = 5  # MODIFICACIÓN 3: Confirmado en 5 segundos
+max_decision_time = 5  # MODIFICACIÓN 3: Tiempo de decisión = 5 segundos
 max_resting_time = 5  # MODIFICACIÓN 2: Tiempo para descansar = 5 segundos
 
 optimal_square = [1, 2, 3, 4, 6, 8, 9, 12, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 35, 36, 40, 42, 45, 48, 49, 50]
@@ -66,7 +64,7 @@ def select_slide(slide_name):
             u"Se te indicará paso a paso qué hacer."
         ],
         'intro_block': [
-            u"Ahora comenzará el " + ("primer" if len(slide_name.split("_")) == 3 and slide_name.split("_")[2] == "1" else ("segundo" if slide_name.split("_")[2] == "2" else "tercer")) + " bloque del experimento",
+            u"Ahora comenzará un bloque del experimento",
             " ",
             u"Puedes descansar unos segundos,",
             u"cuando te sientas listo presiona Espacio para continuar."
@@ -75,7 +73,7 @@ def select_slide(slide_name):
             u"Tarea de presionar la barra espaciadora:",
             " ",
             u"Abajo puedes encontrar un esquema de la tarea",
-            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos.", 
+            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos.",
         ],
         'Interlude_Casillas': [
             u"¡Muy bien! AHORA INTENTA SUPERAR TU RENDIMIENTO"
@@ -119,10 +117,10 @@ def select_slide(slide_name):
             u"Si tardas más de {} segundos, se darán 0 créditos a ti o a la otra persona.".format(max_decision_time),
             " ",
             u"Si eliges trabajar para ganar más créditos,", 
-            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.", 
+            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.",
             u"De lo contrario, no se otorgarán créditos para esa ronda.",
             " ",
-            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos." 
+            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos."
         ],
         'Instructions_Decision_final': [
             u"Recuerda, en cada ronda:",
@@ -136,11 +134,11 @@ def select_slide(slide_name):
             " ",
             u"Continúa con la página siguiente para una ronda de práctica.", 
             u"Tu objetivo es rellenar la barra presionando repetidamente la tecla Espacio.", 
-            u"Ya que es sólo práctica, no obtendrás créditos en estas rondas."
+            u"Ya que es sólo práctica, no se obtendrás créditos en estas rondas."
         ],
         'Effort_ending': [
             u"¡Genial! ya has practicado cómo rellenar la barra", 
-            u"para así ganar créditos para TI o para el OTRO participante.",
+            u"para así ganar créditos para TI o para a el OTRO participante.",
             " ",
             u"Ahora tendrás unas rondas de práctica similares a la tarea que tendrás posteriormente.",
             u"Como fue dicho anteriormente, aquí podrás elegir entre Descansar y ganar 1 crédito,",
@@ -316,7 +314,8 @@ def calibration_slide(text, key, image=None):
         row += 40
 
     if image != None:
-        picture = pygame.image.load("media\\images\\" + image)
+        # Cambiado para usar PNG
+        picture = pygame.image.load(join("media", "images", image))
         picture = pygame.transform.scale(picture, (screen.get_rect().height/2*picture.get_width()/picture.get_height(), screen.get_rect().height/2))        
         rect = picture.get_rect()
         rect = rect.move((screen.get_rect().width/2 - picture.get_width()/2,row + 40))
@@ -344,7 +343,8 @@ def cases_slide(text, key, images=[]):
         row += 40
 
     for image in images:
-        picture = pygame.image.load("media\\images\\" + image)
+        # Cambiado para usar PNG si es necesario
+        picture = pygame.image.load(join("media", "images", image))
         picture = pygame.transform.scale(picture, (screen.get_rect().width/2, screen.get_rect().width/2*picture.get_height()/picture.get_width()))        
         rect = picture.get_rect()
         rect = rect.move(( (1+(2*first_image)) * screen.get_rect().width/4 - picture.get_width()/2, row + 40))
@@ -510,14 +510,47 @@ def draw_progress_bar(current_presses, total_presses, bar_width=100, bar_height=
     # Draw border
     pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 3)
     
-    # REMOVED: Draw progress text
-    # font = pygame.font.Font(None, 36)
-    # progress_text = f"{current_presses}/{total_presses}"
-    # text = font.render(progress_text, True, (0, 0, 0))
-    # text_rect = text.get_rect(centerx=center[0], top=bar_y + bar_height + 20)
-    # screen.blit(text, text_rect)
+    pygame.display.flip()
+
+
+def show_effort_preview(effort_level, effort_percentage):
+    """Show effort circle preview before practice"""
+    screen.fill(background)
+    
+    # Title
+    font = pygame.font.Font(None, 48)
+    text = font.render(f"Nivel de esfuerzo: {effort_percentage}%", True, (0, 0, 0))
+    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/3))
+    screen.blit(text, text_rect)
+    
+    # Load and display effort image - use PNG with self version (red)
+    try:
+        effort_image = pygame.image.load(join('media', f'{effort_percentage}_self.png'))
+        # Use same size as in the task (half size)
+        new_width = effort_image.get_width() // 2
+        new_height = effort_image.get_height() // 2
+        effort_image = pygame.transform.scale(effort_image, (new_width, new_height))
+        img_rect = effort_image.get_rect(center=(resolution[0]/2, resolution[1]/2))
+        screen.blit(effort_image, img_rect)
+    except:
+        # Fallback: draw a simple circle if image not found
+        circle_radius = 40
+        circle_center = (resolution[0]//2, resolution[1]//2)
+        pygame.draw.circle(screen, (255, 255, 255), circle_center, circle_radius)
+        pygame.draw.circle(screen, (255, 0, 0), circle_center, circle_radius, 2)  # Red border for self
+        fallback_font = pygame.font.Font(None, 24)
+        text = fallback_font.render(f"{effort_percentage}%", True, (255, 0, 0))
+        text_rect = text.get_rect(center=circle_center)
+        screen.blit(text, text_rect)
+    
+    # Instructions
+    instruction_font = pygame.font.Font(None, 32)
+    text = instruction_font.render("Presiona Espacio para continuar", True, (0, 0, 0))
+    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]*2/3))
+    screen.blit(text, text_rect)
     
     pygame.display.flip()
+    wait(K_SPACE, 0)
 
 
 def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=False):
@@ -530,40 +563,19 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
 
     screen.fill(background)
     
+    # Determine color based on condition
+    if "TI" in title_text:
+        text_color = (255, 0, 0)  # Red for self
+    elif "OTRO" in title_text:
+        text_color = (0, 0, 255)  # Blue for other
+    else:
+        text_color = (0, 128, 0)  # Green for neutral
+    
     # Draw title text at the top of the screen
     font = pygame.font.Font(None, 36)
-    
-    if "TI" in title_text:
-        text = font.render(title_text, True, (255, 0, 0))
-        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-
-        text2 = font.render(title_text[:-2], True, (0, 128, 0))
-        
-        text_width, text_height = text2.get_size()
-        top_left = text_rect.topleft
-        pygame.draw.rect(screen, (background), (top_left[0], top_left[1], text_width, text_height))
-
-        text_rect2 = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-    
-    elif "OTRO" in title_text:
-        text = font.render(title_text, True, (0, 0, 255))
-        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-        
-        text2 = font.render(title_text[:-4], True, (0, 128, 0))
-
-        text_width, text_height = text2.get_size()
-        top_left = text_rect.topleft
-        pygame.draw.rect(screen, (background), (top_left[0], top_left[1], text_width, text_height))
-
-        text_rect2 = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-
-    else:
-        text = font.render(title_text, True, (0, 128, 0))
-        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-
+    text = font.render(title_text, True, text_color)
+    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
     screen.blit(text, text_rect)
-    if "OTRO" in title_text or "TI" in title_text:
-        screen.blit(text2, text_rect2)
 
     # Timer
     timer_text = pygame.font.Font(None, 36)
@@ -620,25 +632,11 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
                 # Update progress bar
                 screen.fill(background)
                 
-                # Redraw title
+                # Redraw title with proper color
                 font = pygame.font.Font(None, 36)
-                if "TI" in title_text:
-                    text = font.render(title_text, True, (255, 0, 0))
-                    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-                    text2 = font.render(title_text[:-2], True, (0, 128, 0))
-                    text_rect2 = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-                elif "OTRO" in title_text:
-                    text = font.render(title_text, True, (0, 0, 255))
-                    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-                    text2 = font.render(title_text[:-4], True, (0, 128, 0))
-                    text_rect2 = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-                else:
-                    text = font.render(title_text, True, (0, 128, 0))
-                    text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
-                
+                text = font.render(title_text, True, text_color)
+                text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/8))
                 screen.blit(text, text_rect)
-                if "OTRO" in title_text or "TI" in title_text:
-                    screen.blit(text2, text_rect2)
                 
                 # Redraw timer
                 text = timer_text.render(str(max_time - int(rt/1000)) + " s", True, (0, 0, 0))
@@ -672,141 +670,160 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
     return presses_count, presses_count >= target_presses, first_press_time, last_press_time
 
 
-def take_decision(buttons_number, credits_number, title_text, max_time = 6, test = False, effort_level = None):
+def take_decision(buttons_number, credits_number, title_text, max_time = 5, test = False, effort_level = None, condition = None):
+    """Show decision screen with condition-specific colors and images"""
     screen.fill(background)
 
     font = pygame.font.Font(None, 72)
-
-    if "TI" in title_text:
+    
+    # Determine condition and colors
+    if condition == "TI" or "TI" in title_text:
+        condition = "TI"
+        text_color = (255, 0, 0)  # Red for self
         offset = 2
-        offset_color = (255, 0, 0)
-
-    elif "OTRO" in title_text:
+    elif condition == "OTRO" or "OTRO" in title_text:
+        condition = "OTRO"
+        text_color = (0, 0, 255)  # Blue for other
         offset = 4
-        offset_color = (0, 0, 255)
+    else:
+        text_color = (0, 128, 0)  # Green for neutral
+        offset = 0
 
-    text = font.render(title_text[:-offset], True, (0, 128, 0))
-    text_rect = text.get_rect(center=(resolution[0]/2, (resolution[1]/6)))
-    text2 = font.render(title_text[-offset:], True, offset_color)
-    text_rect2 = text2.get_rect(center=(resolution[0]/2, (resolution[1]/6) + 100))
-
-    screen.blit(text, text_rect)
-    screen.blit(text2, text_rect2)
+    if offset > 0:
+        text = font.render(title_text[:-offset], True, text_color)
+        text_rect = text.get_rect(center=(resolution[0]/2, (resolution[1]/6)))
+        text2 = font.render(title_text[-offset:], True, text_color)
+        text_rect2 = text2.get_rect(center=(resolution[0]/2, (resolution[1]/6) + 100))
+        
+        screen.blit(text, text_rect)
+        screen.blit(text2, text_rect2)
+    else:
+        text = font.render(title_text, True, text_color)
+        text_rect = text.get_rect(center=(resolution[0]/2, (resolution[1]/6)))
+        screen.blit(text, text_rect)
 
     # Changed from vertical to horizontal layout
     button_positions = ["left", "right"]  # Left and right positions
 
     shuffle(button_positions)
     
-    # Define button dimensions
-    button_width = resolution[0]/4
-    button_height = resolution[1]/4
+    # Define positions for text and images (no button rectangles)
+    left_x = resolution[0]/4  # Left side of screen
+    right_x = 3*resolution[0]/4  # Right side of screen
+    content_y = resolution[1]/2  # Vertically centered
     
-    # Define horizontal positions - symmetrically placed from center
-    left_x = resolution[0]/4 - button_width/2  # Left side of screen
-    right_x = 3*resolution[0]/4 - button_width/2  # Right side of screen
-    button_y = resolution[1]/2 - button_height/2  # Vertically centered
+    font = pygame.font.Font(None, 48)
     
-    # Create 2 buttons horizontally arranged
+    # Position 1 (Work option) - determine if left or right
     if button_positions[0] == "left":
-        button1 = pygame.Rect(left_x, button_y, button_width, button_height)
-        button2 = pygame.Rect(right_x, button_y, button_width, button_height)
+        work_x = left_x
+        rest_x = right_x
+        work_key = "N"
+        rest_key = "M"
     else:
-        button1 = pygame.Rect(right_x, button_y, button_width, button_height)
-        button2 = pygame.Rect(left_x, button_y, button_width, button_height)
-
-    pygame.draw.rect(screen, base_button_color, button1, 0, 45)
-    pygame.draw.rect(screen, base_button_color, button2, 0, 45)
-
-    font = pygame.font.Font(None, 36)
+        work_x = right_x
+        rest_x = left_x
+        work_key = "M"
+        rest_key = "N"
     
-    # Button 1 - Work option with effort image
-    text = font.render(f"{credits_number} créditos", True, (0, 0, 0))
-    text_rect = text.get_rect(centerx=button1.center[0], centery=button1.center[1] - 60)
+    # Randomly select which option to highlight initially
+    import random
+    initial_selection = random.choice(["work", "rest"])
+    if initial_selection == "work":
+        selected_x = work_x
+    else:
+        selected_x = rest_x
+    
+    # Standard image size for both effort and rest circles
+    standard_circle_size = 350  # Standard size for both images
+    
+    # Work option - credits text (raised higher to avoid overlap)
+    text = font.render(f"{credits_number} créditos", True, text_color)  # Use condition color
+    text_rect = text.get_rect(centerx=work_x, centery=content_y - 150)  # Raised from -100 to -130
     screen.blit(text, text_rect)
     
-    # Load and display effort image
+    # Store positions and sizes for drawing selection box
+    work_img_rect = None
+    rest_img_rect = None
+    
+    # Load and display effort image with condition-specific colors
     if effort_level is not None:
         try:
-            effort_image = pygame.image.load(join('media', f'{effort_level}.jpg'))
-            # Scale image to fit in button
-            max_img_height = int(button_height * 0.5)
-            max_img_width = int(button_width * 0.8)
+            # Use condition-specific image (self or other)
+            if condition == "TI":
+                effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
+            elif condition == "OTRO":
+                effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
+            else:
+                # Fallback to self version if condition not specified
+                effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
             
-            # Calculate scaling to fit within constraints
-            scale_factor = min(max_img_width / effort_image.get_width(), 
-                             max_img_height / effort_image.get_height())
-            
-            new_width = int(effort_image.get_width() * scale_factor)
-            new_height = int(effort_image.get_height() * scale_factor)
-            
-            effort_image = pygame.transform.scale(effort_image, (new_width, new_height))
-            img_rect = effort_image.get_rect(centerx=button1.center[0], 
-                                           centery=button1.center[1] + 20)
-            screen.blit(effort_image, img_rect)
+            # Scale to standard size
+            effort_image = pygame.transform.scale(effort_image, (standard_circle_size, standard_circle_size))
+            work_img_rect = effort_image.get_rect(centerx=work_x, centery=content_y + 20)
+            screen.blit(effort_image, work_img_rect)
         except:
-            # Fallback text if image not found
-            text = font.render(f"Esfuerzo {effort_level}%", True, (0, 0, 0))
-            text_rect = text.get_rect(centerx=button1.center[0], centery=button1.center[1] + 20)
+            # Fallback: draw a simple circle with text if image not found
+            circle_radius = standard_circle_size // 2
+            circle_center = (int(work_x), int(content_y + 20))
+            work_img_rect = pygame.Rect(circle_center[0] - circle_radius, circle_center[1] - circle_radius, 
+                                        standard_circle_size, standard_circle_size)
+            pygame.draw.circle(screen, (255, 255, 255), circle_center, circle_radius)
+            pygame.draw.circle(screen, text_color, circle_center, circle_radius, 2)  # Condition color border
+            fallback_font = pygame.font.Font(None, 24)
+            text = fallback_font.render(f"{effort_level}%", True, text_color)  # Condition color text
+            text_rect = text.get_rect(center=circle_center)
             screen.blit(text, text_rect)
 
-    # Button 2 - Rest option with rest image
-    text = font.render("1 crédito", True, (0, 0, 0))
-    text_rect = text.get_rect(centerx=button2.center[0], centery=button2.center[1] - 60)
+    # Rest option - text (raised higher to match work option)
+    text = font.render("1 crédito", True, text_color)  # Use condition color
+    text_rect = text.get_rect(centerx=rest_x, centery=content_y - 130)  # Raised from -100 to -130
     screen.blit(text, text_rect)
     
-    # Load and display rest image
+    # Load and display rest image with same size as effort image
     try:
-        rest_image = pygame.image.load(join('media', 'Rest.jpg'))
-        # Scale image to fit in button
-        max_img_height = int(button_height * 0.5)
-        max_img_width = int(button_width * 0.8)
-        
-        # Calculate scaling to fit within constraints
-        scale_factor = min(max_img_width / rest_image.get_width(), 
-                         max_img_height / rest_image.get_height())
-        
-        new_width = int(rest_image.get_width() * scale_factor)
-        new_height = int(rest_image.get_height() * scale_factor)
-        
-        rest_image = pygame.transform.scale(rest_image, (new_width, new_height))
-        img_rect = rest_image.get_rect(centerx=button2.center[0], 
-                                     centery=button2.center[1] + 20)
-        screen.blit(rest_image, img_rect)
+        rest_image = pygame.image.load(join('media', 'Rest.png'))  # Changed to PNG
+        # Scale to standard size (same as effort image)
+        rest_image = pygame.transform.scale(rest_image, (standard_circle_size, standard_circle_size))
+        rest_img_rect = rest_image.get_rect(centerx=rest_x, centery=content_y + 20)
+        screen.blit(rest_image, rest_img_rect)
     except:
-        # Fallback text if image not found
-        text = font.render("por descansar", True, (0, 0, 0))
-        text_rect = text.get_rect(centerx=button2.center[0], centery=button2.center[1] + 20)
+        # Fallback: draw a simple circle with text if image not found
+        circle_radius = standard_circle_size // 2
+        circle_center = (int(work_x), int(content_y + 20))
+        work_img_rect = pygame.Rect(circle_center[0] - circle_radius, circle_center[1] - circle_radius, 
+                                    standard_circle_size, standard_circle_size)
+        pygame.draw.circle(screen, (255, 255, 255), circle_center, circle_radius)
+        pygame.draw.circle(screen, text_color, circle_center, circle_radius, 2)  # Condition color border
+        fallback_font = pygame.font.Font(None, 24)
+        text = fallback_font.render(f"{effort_level}%", True, text_color)  # Condition color text
+        text_rect = text.get_rect(center=circle_center)
         screen.blit(text, text_rect)
 
-    # button border
-    pygame.draw.rect(screen, (0, 0, 0), button1, 1, 45)
-    pygame.draw.rect(screen, (0, 0, 0), button2, 1, 45)
+    # Draw initial selection box
+    box_padding = 50
+    if initial_selection == "work" and work_img_rect:
+        box_rect = work_img_rect.inflate(box_padding * 2, box_padding * 2)
+        pygame.draw.rect(screen, (0, 0, 0), box_rect, 5)  # Black box with 5px border
+    elif initial_selection == "rest" and rest_img_rect:
+        box_rect = rest_img_rect.inflate(box_padding * 2, box_padding * 2)
+        pygame.draw.rect(screen, (0, 0, 0), box_rect, 5)  # Black box with 5px border
 
-    # Add key indicators below buttons
-    key_font = pygame.font.Font(None, 48)
-    if button_positions[0] == "left":  # First button is on the left
-        text_n = key_font.render("N", True, (0, 0, 0))
-        text_n_rect = text_n.get_rect(centerx=button1.center[0], top=button1.bottom + 20)
-        screen.blit(text_n, text_n_rect)
-        
-        text_m = key_font.render("M", True, (0, 0, 0))
-        text_m_rect = text_m.get_rect(centerx=button2.center[0], top=button2.bottom + 20)
-        screen.blit(text_m, text_m_rect)
-    else:  # First button is on the right
-        text_m = key_font.render("M", True, (0, 0, 0))
-        text_m_rect = text_m.get_rect(centerx=button1.center[0], top=button1.bottom + 20)
-        screen.blit(text_m, text_m_rect)
-        
-        text_n = key_font.render("N", True, (0, 0, 0))
-        text_n_rect = text_n.get_rect(centerx=button2.center[0], top=button2.bottom + 20)
-        screen.blit(text_n, text_n_rect)
-
-    # Instructions at the bottom
+    # Add key indicators below images ONLY in test mode
     if test:
+        key_font = pygame.font.Font(None, 60)
+        text_work = key_font.render(work_key, True, text_color)  # Use condition color
+        text_work_rect = text_work.get_rect(centerx=work_x, top=content_y + 120)
+        screen.blit(text_work, text_work_rect)
+        
+        text_rest = key_font.render(rest_key, True, text_color)  # Use condition color
+        text_rest_rect = text_rest.get_rect(centerx=rest_x, top=content_y + 120)
+        screen.blit(text_rest, text_rest_rect)
+
+        # Instructions at the bottom ONLY in test mode
         instruction_font = pygame.font.Font(None, 36)
         text = instruction_font.render("Presiona N para la opción izquierda o M para la opción derecha", True, (0, 0, 0))
-        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1] * 0.85))
+        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1] * 0.89))
         screen.blit(text, text_rect)
 
     pygame.display.flip()
@@ -835,16 +852,131 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 6, test
                 key_pressed = "left"
                 if button_positions[0] == "left":  # First button is on the left
                     selected_button = 1
+                    final_selected_x = work_x
                 else:  # Second button is on the left
                     selected_button = 2
+                    final_selected_x = rest_x
+                
+                # Redraw screen with selection box on chosen option
+                screen.fill(background)
+                
+                # Redraw title
+                if offset > 0:
+                    text = font.render(title_text[:-offset], True, text_color)
+                    text_rect = text.get_rect(center=(resolution[0]/2, (resolution[1]/6)))
+                    text2 = font.render(title_text[-offset:], True, text_color)
+                    text_rect2 = text2.get_rect(center=(resolution[0]/2, (resolution[1]/6) + 100))
+                    screen.blit(text, text_rect)
+                    screen.blit(text2, text_rect2)
+                
+                # Redraw all elements
+                font = pygame.font.Font(None, 48)
+                
+                # Work option
+                text = font.render(f"{credits_number} créditos", True, text_color)
+                text_rect = text.get_rect(centerx=work_x, centery=content_y - 130)
+                screen.blit(text, text_rect)
+                
+                if effort_level is not None:
+                    try:
+                        if condition == "TI":
+                            effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
+                        else:
+                            effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
+                        effort_image = pygame.transform.scale(effort_image, (standard_circle_size, standard_circle_size))
+                        work_img_rect = effort_image.get_rect(centerx=work_x, centery=content_y + 20)
+                        screen.blit(effort_image, work_img_rect)
+                    except:
+                        pass
+                
+                # Rest option
+                text = font.render("1 crédito", True, text_color)
+                text_rect = text.get_rect(centerx=rest_x, centery=content_y - 130)
+                screen.blit(text, text_rect)
+                
+                try:
+                    rest_image = pygame.image.load(join('media', 'Rest.png'))
+                    rest_image = pygame.transform.scale(rest_image, (standard_circle_size, standard_circle_size))
+                    rest_img_rect = rest_image.get_rect(centerx=rest_x, centery=content_y + 20)
+                    screen.blit(rest_image, rest_img_rect)
+                except:
+                    pass
+                
+                # Draw selection box on chosen option (left was selected)
+                if button_positions[0] == "left" and work_img_rect:  # Work is on left
+                    box_rect = work_img_rect.inflate(box_padding * 2, box_padding * 2)
+                else:  # Rest is on left
+                    box_rect = rest_img_rect.inflate(box_padding * 2, box_padding * 2)
+                pygame.draw.rect(screen, (0, 0, 0), box_rect, 5)
+                
+                pygame.display.flip()
+                pygame.time.delay(500)  # Show selection for 500ms
                 done = True
+                
             elif event.type == KEYUP and event.key == K_m:
                 reaction_time = pygame.time.get_ticks() - tw
                 key_pressed = "right"
                 if button_positions[0] == "left":  # Second button is on the right
                     selected_button = 2
+                    final_selected_x = rest_x
                 else:  # First button is on the right
                     selected_button = 1
+                    final_selected_x = work_x
+                
+                # Redraw screen with selection box on chosen option
+                screen.fill(background)
+                
+                # Redraw title
+                if offset > 0:
+                    text = font.render(title_text[:-offset], True, text_color)
+                    text_rect = text.get_rect(center=(resolution[0]/2, (resolution[1]/6)))
+                    text2 = font.render(title_text[-offset:], True, text_color)
+                    text_rect2 = text2.get_rect(center=(resolution[0]/2, (resolution[1]/6) + 100))
+                    screen.blit(text, text_rect)
+                    screen.blit(text2, text_rect2)
+                
+                # Redraw all elements
+                font = pygame.font.Font(None, 48)
+                
+                # Work option
+                text = font.render(f"{credits_number} créditos", True, text_color)
+                text_rect = text.get_rect(centerx=work_x, centery=content_y - 130)
+                screen.blit(text, text_rect)
+                
+                if effort_level is not None:
+                    try:
+                        if condition == "TI":
+                            effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
+                        else:
+                            effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
+                        effort_image = pygame.transform.scale(effort_image, (standard_circle_size, standard_circle_size))
+                        work_img_rect = effort_image.get_rect(centerx=work_x, centery=content_y + 20)
+                        screen.blit(effort_image, work_img_rect)
+                    except:
+                        pass
+                
+                # Rest option
+                text = font.render("1 crédito", True, text_color)
+                text_rect = text.get_rect(centerx=rest_x, centery=content_y - 130)
+                screen.blit(text, text_rect)
+                
+                try:
+                    rest_image = pygame.image.load(join('media', 'Rest.png'))
+                    rest_image = pygame.transform.scale(rest_image, (standard_circle_size, standard_circle_size))
+                    rest_img_rect = rest_image.get_rect(centerx=rest_x, centery=content_y + 20)
+                    screen.blit(rest_image, rest_img_rect)
+                except:
+                    pass
+                
+                # Draw selection box on chosen option (right was selected)
+                if button_positions[0] == "left" and rest_img_rect:  # Rest is on right
+                    box_rect = rest_img_rect.inflate(box_padding * 2, box_padding * 2)
+                else:  # Work is on right
+                    box_rect = work_img_rect.inflate(box_padding * 2, box_padding * 2)
+                pygame.draw.rect(screen, (0, 0, 0), box_rect, 5)
+                
+                pygame.display.flip()
+                pygame.time.delay(500)  # Show selection for 500ms
                 done = True
 
             elif event.type == seconds:
@@ -857,28 +989,26 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 6, test
     return (selected_button, key_pressed, reaction_time)
 
 
-def show_resting(title_text, max_time = 10):
-
+def show_resting(title_text, max_time = 5):
+    """Show resting screen with condition-specific colors"""
     screen.fill(background)
     font = pygame.font.Font(None, 42)
 
+    # Determine condition and use appropriate color
     if "TI" in title_text:
-        text = font.render(title_text, True, (255, 0, 0))
+        text_color = (255, 0, 0)  # Red for self
+        text = font.render(title_text, True, text_color)
         text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
-        text2 = font.render(title_text[:-2], True, (0, 128, 0))
-
     elif "OTRO" in title_text:
-        text = font.render(title_text, True, (0, 0, 255))
+        text_color = (0, 0, 255)  # Blue for other
+        text = font.render(title_text, True, text_color)
         text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
-        text2 = font.render(title_text[:-4], True, (0, 128, 0))
-
-    text_width, text_height = text2.get_size()
-    top_left = text_rect.topleft
-    pygame.draw.rect(screen, (background), (top_left[0], top_left[1], text_width, text_height))
-    text_rect2 = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
+    else:
+        text_color = (0, 128, 0)  # Green for neutral
+        text = font.render(title_text, True, text_color)
+        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
 
     screen.blit(text, text_rect)
-    screen.blit(text2, text_rect2)
 
     timer_text = pygame.font.Font(None, 42)
     text = timer_text.render(str(max_time) + " s", True, (0, 0, 0))
@@ -920,21 +1050,85 @@ def show_resting(title_text, max_time = 10):
 def task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, 
          test = False, decision_practice_trials = 1, file = None, effort_table = None):
 
-    last_list_cut = 0
-    actual_list_cut = len(self_combinations)//blocks_number
+    # MODIFICACIÓN 1: Para 96 trials con 16 combinaciones, necesitamos 2 repeticiones por bloque
+    # 16 combinaciones * 2 repeticiones = 32 trials por bloque
+    # 32 trials * 3 bloques = 96 trials totales
+    repetitions_per_block = 2  # Nueva variable para repetir las combinaciones
+    
+    # Si es práctica, crear solo 2 trials de cada tipo
+    if test:
+        # Seleccionar aleatoriamente 2 combinaciones de cada tipo para la práctica
+        import random
+        practice_self = random.sample(self_combinations, min(2, len(self_combinations)))
+        practice_other = random.sample(other_combinations, min(2, len(other_combinations)))
+        actual_combinations_list = practice_self + practice_other
+        shuffle(actual_combinations_list)
+        
+        for combination in actual_combinations_list:
+            # Clear buttons time
+            first_button_pressed_time, last_button_pressed_time = None, None
 
-    for _ in range(blocks_number):
+            # Intro
+            windows([f"Créditos para", combination[2]], K_SPACE, 2000)
+
+            # Get effort level for the image
+            effort_level = effort_table[combination[0]] if effort_table else None
+
+            # Selection - now passing effort_level and condition
+            selection, key_pressed, decision_reaction_time = take_decision(
+                combination[0], combination[1], f"Créditos para {combination[2]}", 
+                max_time = max_decision_time, test = test, effort_level = effort_level, 
+                condition = combination[2]
+            )
+
+            if selection not in [1, 2]:
+                while selection not in [1, 2]:
+                    slide(select_slide('TestingDecision'), False, K_SPACE)
+                    selection, key_pressed, decision_reaction_time = take_decision(
+                        combination[0], combination[1], f"Créditos para {combination[2]}", 
+                        max_time = max_decision_time, test = test, effort_level = effort_level,
+                        condition = combination[2]
+                    )
+
+            # Trial
+            if selection == 1:
+                presses_done, target_reached, first_press_time, last_press_time = show_effort_bar(
+                    target_presses=combination[0], max_time=max_answer_time, 
+                    title_text=f"Créditos para {combination[2]}"
+                )
+                earned_credits = combination[1] if target_reached else 0
+            elif selection == 2:
+                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
+                earned_credits = 1
+                presses_done = 0
+                target_reached = True
+                first_press_time = None
+                last_press_time = None
+
+            # Feedback for practice
+            if combination[2] == "TI":
+                windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+            else:
+                windows(["Otra persona ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+        
+        return  # Exit after practice trials
+    
+    # Experimental trials (not practice)
+    for block_num in range(blocks_number):
+        # Crear lista de combinaciones para este bloque con repeticiones
         if block_type == "division":
-            actual_combinations_list = self_combinations[last_list_cut:actual_list_cut] + other_combinations[last_list_cut:actual_list_cut]
+            # Usar todas las combinaciones en cada bloque con repeticiones
+            block_self_combinations = self_combinations * repetitions_per_block
+            block_other_combinations = other_combinations * repetitions_per_block
+            actual_combinations_list = block_self_combinations + block_other_combinations
         elif block_type == "total":
-            actual_combinations_list = self_combinations + other_combinations
+            # Usar todas las combinaciones en cada bloque con repeticiones
+            actual_combinations_list = (self_combinations + other_combinations) * repetitions_per_block
         else:
             print("Tipo de bloque no reconocido")
             break
 
         shuffle(actual_combinations_list)
-
-        practice_count = 0
 
         for combination in actual_combinations_list:
             # Clear buttons time
@@ -946,76 +1140,64 @@ def task(self_combinations, other_combinations, blocks_number, block_type, max_a
             # Get effort level for the image
             effort_level = effort_table[combination[0]] if effort_table else None
 
-            # Selection - now passing effort_level
-            selection, key_pressed, decision_reaction_time = take_decision(combination[0], combination[1], f"Créditos para {combination[2]}", max_time = max_decision_time, test = test, effort_level = effort_level)
+            # Selection - now passing effort_level and condition
+            selection, key_pressed, decision_reaction_time = take_decision(
+                combination[0], combination[1], f"Créditos para {combination[2]}", 
+                max_time = max_decision_time, test = test, effort_level = effort_level,
+                condition = combination[2]
+            )
 
             if selection not in [1, 2]:
-                if test:
-                    while selection not in [1, 2]:
-                        slide(select_slide('TestingDecision'), False, K_SPACE)
-                        # if return is 1, the participant selected a credit button, else a resting button
-                        selection, key_pressed, decision_reaction_time = take_decision(combination[0], combination[1], f"Créditos para {combination[2]}", max_time = max_decision_time, test =  test, effort_level = effort_level)
-                else:        
-                    show_resting(f"Créditos para {combination[2]}", max_time = 10)
-                    # Initialize variables for no decision
-                    presses_done = 0
-                    target_reached = False
-                    first_press_time = None
-                    last_press_time = None
-                    earned_credits = 0
-
-            button_clear = False
+                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
+                # Initialize variables for no decision
+                presses_done = 0
+                target_reached = False
+                first_press_time = None
+                last_press_time = None
+                earned_credits = 0
 
             # Trial
-            if selection == 1:
-                presses_done, target_reached, first_press_time, last_press_time = show_effort_bar(target_presses=combination[0], max_time=max_answer_time, title_text=f"Créditos para {combination[2]}")
+            elif selection == 1:
+                presses_done, target_reached, first_press_time, last_press_time = show_effort_bar(
+                    target_presses=combination[0], max_time=max_answer_time, 
+                    title_text=f"Créditos para {combination[2]}"
+                )
                 earned_credits = combination[1]
                 if not target_reached:
                     earned_credits = 0
-                    show_resting(f"Créditos para {combination[2]}", max_time = 10)
-                else:
-                    pass
 
             elif selection == 2:
-                show_resting(f"Créditos para {combination[2]}", max_time = 10)
+                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
                 earned_credits = 1
                 # Initialize variables for resting trials
                 presses_done = 0
                 target_reached = True
                 first_press_time = None
                 last_press_time = None
-
-            else:
-                print("No se ha seleccionado decisiones")
-                earned_credits = 0
-                # Variables already initialized above for no decision case
             
-            # Earned credits
-            if not test:
-                #("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % ("NivelEsfuerzo", "NivelReward", "Condición", "Decisión", "PresionesHechas", "ÉxitoTarea", "CréditosGanados", "TiempoReacciónDecisión", "TiempoReacciónPrimerPresión", "TiempoReacciónÚltimaPresión"))
-                if file != None:
-                    file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (effort_table[combination[0]], combination[1], "Self" if combination[2] == "TI" else "Other", "task" if selection == 1 else ("resting" if selection == 2 else "no decision"), presses_done if selection == 1 else 0, "True" if selection == 2 else target_reached, earned_credits, decision_reaction_time, first_press_time, last_press_time))
-                    file.flush()
-                if combination[2] == "TI":
-                    windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
-                else:
-                    windows(["Otra persona ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+            # Log data
+            if file != None:
+                file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (
+                    effort_table[combination[0]], combination[1], 
+                    "Self" if combination[2] == "TI" else "Other", 
+                    "task" if selection == 1 else ("resting" if selection == 2 else "no decision"), 
+                    presses_done if selection == 1 else 0, 
+                    "True" if selection == 2 else target_reached, 
+                    earned_credits, decision_reaction_time, 
+                    first_press_time, last_press_time
+                ))
+                file.flush()
+            
+            # Show earned credits
+            if combination[2] == "TI":
+                windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+            else:
+                windows(["Otra persona ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
 
-            if test:
-                practice_count += 1
-                if practice_count >= decision_practice_trials:
-                    break
+        if block_num < blocks_number - 1:  # No mostrar break después del último bloque
+            slide(select_slide('Break'), False, K_SPACE)  # Break entre bloques
 
-        if not test:
-            slide(select_slide('Break'), False, K_SPACE)
-            last_list_cut = actual_list_cut
-            actual_list_cut += len(self_combinations)//blocks_number
-        else:
-            # If in test mode, we don't break after practice trials
-            last_list_cut = actual_list_cut
-            actual_list_cut += len(self_combinations)//blocks_number
 
-        
 # Main Function
 def main():
     """Game's main loop"""
@@ -1047,10 +1229,10 @@ def main():
     slide(select_slide('welcome'), False, K_SPACE)
 
     # ------------------- calibration block ------------------------
-    calibration_slide(select_slide('Instructions_Casillas'), K_SPACE, "testing_schema.jpg")
+    calibration_slide(select_slide('Instructions_Casillas'), K_SPACE, "testing_schema.jpg")  # Changed to PNG
 
-    # First calibration: 100 presses
-    presses_count_1, _, _, _ = show_effort_bar(target_presses=110, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
+    # MODIFICACIÓN 4: Primera calibración cambiada de 110 a 50 pulsaciones
+    presses_count_1, _, _, _ = show_effort_bar(target_presses=50, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
 
     slide(select_slide('Interlude_Casillas'), False, K_SPACE)
 
@@ -1074,7 +1256,7 @@ def main():
 
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Instructions_Decision_1'), False, K_SPACE)
-    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg"])
+    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg"])  # Changed to PNG
     slide(select_slide('Instructions_Decision_3'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_final'), False, K_SPACE)
 
@@ -1091,13 +1273,18 @@ def main():
 
     # Testing Trials for all effort levels
     for _ in range(practice_iterations):
-        for effort_level in effort_levels_recalculated:
+        for i, effort_level in enumerate(effort_levels_recalculated):
+            # Show effort circle preview before each practice level
+            show_effort_preview(effort_level, effort_levels[i])
+            # Then show the practice trial
             show_effort_bar(target_presses=effort_level, max_time=max_answer_time, title_text=f"Créditos para TI")
 
     # Testing full block      
     slide(select_slide('Effort_ending'), False, K_SPACE)
 
     task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, test = True, decision_practice_trials = decision_practice_trials, effort_table = effort_table)
+
+    slide(select_slide('Practice_ending'), False, K_SPACE)
 
     # ------------------------ Experiment Section -----------------------------
     # Experiment Starting
