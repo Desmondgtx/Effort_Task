@@ -830,7 +830,7 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     reaction_time = None
 
     # MODIFICACIÓN: Padding aumentado a 50px
-    box_padding = 50
+    box_padding = 40
 
     while not done:
         for event in pygame.event.get():
