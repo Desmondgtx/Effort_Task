@@ -1,0 +1,6 @@
+NivelEsfuerzo,NivelReward,Condición,Decisión,PresionesHechas,ÉxitoTarea,CréditosGanados,TiempoReacciónDecisión,TiempoReacciónPrimerPresión,TiempoReacciónÚltimaPresión
+50,2,Other,resting,0,True,1,3068,None,None
+50,2,Other,resting,0,True,1,1871,None,None
+95,5,Self,resting,0,True,1,1236,None,None
+65,2,Other,no decision,0,False,0,None,None,None
+65,4,Other,resting,0,True,1,1459,None,None
