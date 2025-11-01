@@ -7,7 +7,7 @@
 # Total Blocks = blocks_number
 
 """
-tested in Python 3.10.9
+tested in Python 3.10.18
 """
 import pygame, sys, os, cv2, math
 from pygame.locals import FULLSCREEN, USEREVENT, KEYUP, K_SPACE, K_RETURN, K_ESCAPE, QUIT, Color, K_c, K_n, K_m
@@ -160,16 +160,23 @@ def select_slide(slide_name):
             " ",
             u"Presiona Espacio para continuar con la próxima tarea."
         ],
+        'Pre_Instructions': [
+            u"Se te ha asignado el rol de Jugador 1,",
+            u"mientras que a otro participante se le ha asignado el rol de Jugador 2.",
+            u"Esto significa que tomarás decisiones que afectarán al Jugador 2,",
+            u"pero él no podrá tomar decisiones que te afecten a ti."
+        ],
+        'Cargando':[
+            u"Ahora haz click para conectarte con otro jugador",
+            u"",
+
+
+        ],
         'Instructions_Decision_1': [
             u"Tarea de decisiones:",
             " ",
             u"En esta tarea, tú tendrás que rellenar la barra para ganar créditos.",
             u"Estos créditos pueden ser otorgados a TI, o a OTRO participante de esta investigación",
-            " ",
-            u"Se te ha asignado el rol de Jugador 1,",
-            u"mientras que a otro participante se le ha asignado el rol de Jugador 2.",
-            u"Esto significa que tomarás decisiones que afectarán al Jugador 2,",
-            u"pero él no podrá tomar decisiones que te afecten a ti.",
             " ",
             u"En cada ronda de esta tarea, tendrás que elegir entre dos opciones:",
             u'"Descansar": No tendrás que hacer nada y podrás descansar a cambio de 1 crédito.',
@@ -379,6 +386,71 @@ def slide(text, info, key, limit_time=0):
     wait_time = wait(key, limit_time)
     return wait_time
 
+def show_gif_loading(gif_path=None, duration_ms=10000):
+    """Muestra una animación de carga durante un tiempo específico"""
+    global screen, background
+    
+    # Obtener dimensiones de la pantalla
+    width = screen.get_width()
+    height = screen.get_height()
+    
+    # Variables para el control del tiempo
+    clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
+    
+    # Configuración del spinner
+    spinner_radius = 50
+    spinner_thickness = 8
+    center_x = width // 2
+    center_y = height // 2
+    
+    angle = 0
+    
+    # Bucle principal para mostrar la animación
+    while pygame.time.get_ticks() - start_time < duration_ms:
+        # Manejar eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                ends()
+            elif event.type == KEYUP and event.key == K_ESCAPE:
+                ends()
+        
+        # Limpiar pantalla
+        screen.fill(background)
+        
+        # Dibujar texto "Cargando..."
+        font = pygame.font.SysFont("Arial", 40, bold=False)
+        text = font.render("Cargando...", True, pygame.Color('white'))
+        text_rect = text.get_rect(center=(center_x, center_y - 100))
+        screen.blit(text, text_rect)
+        
+        # Dibujar spinner animado
+        for i in range(12):
+            a = angle + i * 30
+            x = center_x + spinner_radius * math.cos(math.radians(a))
+            y = center_y + spinner_radius * math.sin(math.radians(a))
+            
+            # Variar la opacidad para crear efecto de movimiento
+            opacity = int(255 * (1 - i / 12.0))
+            color = (opacity, opacity, opacity)
+            
+            pygame.draw.circle(screen, color, (int(x), int(y)), spinner_thickness)
+        
+        angle = (angle + 5) % 360
+        
+        # Texto de progreso (opcional)
+        elapsed = (pygame.time.get_ticks() - start_time) / 1000
+        progress = min(elapsed / (duration_ms / 1000) * 100, 100)
+        progress_text = font.render(f"{int(progress)}%", True, pygame.Color('white'))
+        progress_rect = progress_text.get_rect(center=(center_x, center_y + 100))
+        screen.blit(progress_text, progress_rect)
+        
+        pygame.display.flip()
+        clock.tick(60)
+    
+    # Limpiar la pantalla al final
+    screen.fill(background)
+    pygame.display.flip()
 
 def calibration_slide(text, key, image=None):    
     screen.fill(background)
@@ -1140,7 +1212,6 @@ def show_resting(title_text, max_time = 5):
         for event in pygame.event.get():
             if event.type == KEYUP and event.key == K_ESCAPE:
                 pygame_exit()
-        
         # Check for timeout without visual timer
         rt = pygame.time.get_ticks() - tw
         if rt >= max_time * 1000:
@@ -1149,7 +1220,6 @@ def show_resting(title_text, max_time = 5):
 
 def task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, 
          test = False, decision_practice_trials = 1, file = None, effort_table = None):
-    
     # Para práctica
     if test:
         send_marker(MARKERS['PRACTICE_START'], "Practice trials start")
@@ -1330,15 +1400,13 @@ def main():
     
     calibration_slide(select_slide('Instructions_Casillas'), K_SPACE, "testing_schema.jpg")
 
-    # Primera calibración: 50 pulsaciones
+    # Calibraciones
     presses_count_1, _, _, _ = show_effort_bar(target_presses=50, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
-
     slide(select_slide('Interlude_Casillas'), False, K_SPACE)
 
     # Segunda calibración: 110% de la primera
     target_calibration_2 = ceil(presses_count_1 * 1.1)
     presses_count_2, _, _, _ = show_effort_bar(target_presses=target_calibration_2, max_time=max_answer_time, title_text="Comienza!", is_calibration=True)
-
     slide(select_slide('Interlude_Casillas'), False, K_SPACE)
 
     # Tercera calibración: 110% del máximo previo
@@ -1348,13 +1416,17 @@ def main():
 
     # Usar el máximo de las tres calibraciones
     max_presses_count = max(presses_count_1, presses_count_2, presses_count_3)
-    
     if max_presses_count < min_buttons:
         max_presses_count = min_buttons
-    
     send_marker(MARKERS['CALIBRATION_END'], f"Calibration end - Max presses: {max_presses_count}")
 
+    # ------------------- NEW: Loading screen and Pre-Instructions -------------------
+    # Mostrar GIF de carga por 10 segundos
+    slide(select_slide('Cargando'), False, K_SPACE)
+    show_gif_loading(duration_ms=30000)
+
     # ------------------- Decision instructions block ------------------------
+    slide(select_slide('Pre_Instructions'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_1'), False, K_SPACE)
     cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg"])
     slide(select_slide('Instructions_Decision_3'), False, K_SPACE)
