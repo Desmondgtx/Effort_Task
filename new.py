@@ -736,6 +736,8 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
         text_color = (255, 0, 0)  # Red for self
     elif "OTRO" in title_text:
         text_color = (0, 0, 255)  # Blue for other
+    elif "GRUPO" in title_text:
+        text_color = (0, 128, 0) 
     else:
         text_color = (0, 128, 0)  # Green for neutral
     
@@ -1014,7 +1016,7 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     reaction_time = None
 
     # MODIFICACIÓN: Padding aumentado a 50px
-    box_padding = 50
+    box_padding = 30
 
     while not done:
         for event in pygame.event.get():
@@ -1123,8 +1125,10 @@ def _redraw_decision_screen_with_box(title_text, text_color, offset, credits_num
         try:
             if condition == "TI":
                 effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
-            else:
+            elif condition == "OTRO":
                 effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
+            elif condition == "GRUPO":
+                effort_image = pygame.image.load(join('media', f'{effort_level}_group.png'))
             
             original_width = effort_image.get_width()
             original_height = effort_image.get_height()
