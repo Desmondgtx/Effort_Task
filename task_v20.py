@@ -98,24 +98,48 @@ class TextRectException(Exception):
 # Configurations:
 FullScreenShow = True  # Pantalla completa automáticamente al iniciar el experimento
 keys = [pygame.K_SPACE]  # Teclas elegidas para mano derecha o izquierda
-test_name = "PET"
+test_name = "Task"
 date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
 effort_levels = [50, 65, 80, 95]
 credits_levels = [2, 3, 4, 5]
 
-# block_type = division, total
-block_type = "division"
+# Configuración de nombres de condiciones (beneficiarios)
+# Nombres internos en el código (para lógica y archivos de datos)
+CONDITION_SELF = "TI"
+CONDITION_INGROUP = "in-group"
+CONDITION_OUTGROUP = "out-group"
+
+# Nombres que se muestran en pantalla al participante
+DISPLAY_NAME_SELF = "TI"
+DISPLAY_NAME_INGROUP = "JUAN"
+DISPLAY_NAME_OUTGROUP = "PEDRO"
+
+# Color de relleno de la barra de esfuerzo (RGB)
+bar_fill_color = (255, 255, 0)  # Amarillo
+
+def get_display_name(condition):
+    """Convierte el nombre interno de la condición al nombre que se muestra en pantalla"""
+    if condition == CONDITION_SELF:
+        return DISPLAY_NAME_SELF
+    elif condition == CONDITION_INGROUP:
+        return DISPLAY_NAME_INGROUP
+    elif condition == CONDITION_OUTGROUP:
+        return DISPLAY_NAME_OUTGROUP
+    else:
+        return condition
+
+# Parámetros
+block_type = "division" #block_type = division, total
 
 min_buttons = 10
 
-practice_iterations = 2  # CORRECCIÓN: Cambiar a 2 para repetir la práctica de esfuerzos
-decision_practice_trials = 2  # Cambiado de 4 a 2 trials de práctica
+practice_iterations = 2  # repetir la práctica de esfuerzos
+decision_practice_trials = 2  # trials de práctica
 
-# MODIFICACIÓN 1: Cambiar a 3 bloques para tener 96 trials
-blocks_number = 3
-max_answer_time = 5  # MODIFICACIÓN 2: Tiempo para trabajar = 5 segundos
-max_decision_time = 4  # CORRECCIÓN: Tiempo de decisión = 4 segundos (cambiado de 5 a 4)
-max_resting_time = 5  # MODIFICACIÓN 2: Tiempo para descansar = 5 segundos
+blocks_number = 3 # Cambiar a 3 bloques para tener 96 trials
+max_answer_time = 5  # Tiempo para trabajar 
+max_decision_time = 4  # Tiempo de decisión 
+max_resting_time = 5  # Tiempo para descansar
 
 optimal_square = [1, 2, 3, 4, 6, 8, 9, 12, 15, 16, 18, 20, 21, 24, 25, 27, 28, 30, 32, 35, 36, 40, 42, 45, 48, 49, 50]
 
@@ -493,14 +517,28 @@ def cases_slide(text, key, images=[]):
         screen.blit(phrase, phrasebox)
         row += 40
 
-    for image in images:
+    # Primera fila: primeras 2 imágenes lado a lado
+    first_row_images = images[:2]
+    row_after_first = row
+    
+    for image in first_row_images:
         # Cambiado para usar PNG si es necesario
         picture = pygame.image.load(join("media", "images", image))
         picture = pygame.transform.scale(picture, (screen.get_rect().width/2, screen.get_rect().width/2*picture.get_height()/picture.get_width()))        
         rect = picture.get_rect()
         rect = rect.move(( (1+(2*first_image)) * screen.get_rect().width/4 - picture.get_width()/2, row + 40))
         screen.blit(picture, rect)
+        row_after_first = max(row_after_first, row + 40 + picture.get_height())
         first_image += 1
+
+    # Segunda fila: tercera imagen centrada (si existe)
+    if len(images) > 2:
+        third_image = images[2]
+        picture = pygame.image.load(join("media", "images", third_image))
+        picture = pygame.transform.scale(picture, (screen.get_rect().width/2, screen.get_rect().width/2*picture.get_height()/picture.get_width()))        
+        rect = picture.get_rect()
+        rect = rect.move((screen.get_rect().width/2 - picture.get_width()/2, row_after_first + 20))
+        screen.blit(picture, rect)
 
     nextpage = charnext.render(u"Para continuar presione la tecla ESPACIO...", True, charnext_color)
     nextbox = nextpage.get_rect(left=15, bottom=resolution[1] - 15)
@@ -563,7 +601,7 @@ def windows(text, key=None, limit_time=0):
 
     font = pygame.font.Font(None, 90)
 
-    if "TI" in text[1] or "OTRO" in text[1]:
+    if DISPLAY_NAME_SELF in text[1] or DISPLAY_NAME_INGROUP in text[1] or DISPLAY_NAME_OUTGROUP in text[1]:
         phrase = font.render(text[0], True, (0, 0, 0))
         phrasebox = phrase.get_rect(centerx=center[0], top=row)
         screen.blit(phrase, phrasebox)
@@ -571,7 +609,12 @@ def windows(text, key=None, limit_time=0):
 
         font = pygame.font.Font(None, 140)
 
-        color = (255, 0, 0) if text[1] == "TI" else (0, 0, 255)
+        if text[1] == DISPLAY_NAME_SELF:
+            color = (255, 0, 0)  # Red for self
+        elif text[1] == DISPLAY_NAME_INGROUP:
+            color = (0, 0, 255)  # Blue for in-group
+        else:
+            color = (0, 128, 0)  # Green for out-group
 
         phrase = font.render(text[1], True, color)
         phrasebox = phrase.get_rect(centerx=center[0], top=row)
@@ -658,7 +701,7 @@ def draw_progress_bar(current_presses, total_presses, bar_width=100, bar_height=
     # Draw filled portion (from bottom up)
     if fill_height > 0:
         fill_y = bar_y + bar_height - fill_height
-        pygame.draw.rect(screen, (0, 255, 0), (bar_x, fill_y, bar_width, fill_height))
+        pygame.draw.rect(screen, bar_fill_color, (bar_x, fill_y, bar_width, fill_height))
     
     # Draw border
     pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_width, bar_height), 3)
@@ -732,14 +775,14 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
     screen.fill(background)
     
     # Determine color based on condition
-    if "TI" in title_text:
+    if DISPLAY_NAME_SELF in title_text:
         text_color = (255, 0, 0)  # Red for self
-    elif "OTRO" in title_text:
-        text_color = (0, 0, 255)  # Blue for other
-    elif "GRUPO" in title_text:
-        text_color = (0, 128, 0) 
+    elif DISPLAY_NAME_INGROUP in title_text:
+        text_color = (0, 0, 255)  # Blue for in-group
+    elif DISPLAY_NAME_OUTGROUP in title_text:
+        text_color = (0, 128, 0)  # Green for out-group
     else:
-        text_color = (0, 128, 0)  # Green for neutral
+        text_color = (0, 0, 0)  # Black for calibration/neutral
     
     # Draw title text at the top of the screen
     font = pygame.font.Font(None, 36)
@@ -834,30 +877,30 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     pygame.event.clear()
     
     # Enviar marcador de inicio de decisión según condición
-    if condition == "TI" or "TI" in title_text:
+    if condition == CONDITION_SELF or DISPLAY_NAME_SELF in title_text:
         send_marker(MARKERS['DECISION_START_SELF'], f"Decision start - Self - Credits: {credits_number}")
-    elif condition == "GRUPO" or "GRUPO" in title_text:
-        send_marker(MARKERS['DECISION_START_GROUP'], f"Decision start - Group - Credits: {credits_number}")
+    elif condition == CONDITION_OUTGROUP or DISPLAY_NAME_OUTGROUP in title_text:
+        send_marker(MARKERS['DECISION_START_GROUP'], f"Decision start - out-group - Credits: {credits_number}")
     else:
-        send_marker(MARKERS['DECISION_START_OTHER'], f"Decision start - Other - Credits: {credits_number}")
+        send_marker(MARKERS['DECISION_START_OTHER'], f"Decision start - in-group - Credits: {credits_number}")
     
     screen.fill(background)
 
     font = pygame.font.Font(None, 72)
     
     # Determine condition and colors
-    if condition == "TI" or "TI" in title_text:
-        condition = "TI"
+    if condition == CONDITION_SELF or DISPLAY_NAME_SELF in title_text:
+        condition = CONDITION_SELF
         text_color = (255, 0, 0)  # Red for self
-        offset = 2
-    elif condition == "OTRO" or "OTRO" in title_text:
-        condition = "OTRO"
-        text_color = (0, 0, 255)  # Blue for other
-        offset = 4
-    elif condition == "GRUPO" or "GRUPO" in title_text:
-        condition = "GRUPO"
-        text_color = (0, 128, 0)  # Green for group
-        offset = 5
+        offset = len(DISPLAY_NAME_SELF)
+    elif condition == CONDITION_INGROUP or DISPLAY_NAME_INGROUP in title_text:
+        condition = CONDITION_INGROUP
+        text_color = (0, 0, 255)  # Blue for in-group
+        offset = len(DISPLAY_NAME_INGROUP)
+    elif condition == CONDITION_OUTGROUP or DISPLAY_NAME_OUTGROUP in title_text:
+        condition = CONDITION_OUTGROUP
+        text_color = (0, 128, 0)  # Green for out-group
+        offset = len(DISPLAY_NAME_OUTGROUP)
     else:
         text_color = (0, 128, 0)  # Green for neutral
         offset = 0
@@ -916,11 +959,11 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     if effort_level is not None:
         try:
             # Use condition-specific image (self or other)
-            if condition == "TI":
+            if condition == CONDITION_SELF:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
-            elif condition == "OTRO":
+            elif condition == CONDITION_INGROUP:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
-            elif condition == "GRUPO":
+            elif condition == CONDITION_OUTGROUP:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_group.png'))
             else:
                 # Fallback to self version if condition not specified
@@ -1016,7 +1059,7 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     reaction_time = None
 
     # MODIFICACIÓN: Padding aumentado a 50px
-    box_padding = 30
+    box_padding = 25
 
     while not done:
         for event in pygame.event.get():
@@ -1123,11 +1166,11 @@ def _redraw_decision_screen_with_box(title_text, text_color, offset, credits_num
     
     if effort_level is not None:
         try:
-            if condition == "TI":
+            if condition == CONDITION_SELF:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
-            elif condition == "OTRO":
+            elif condition == CONDITION_INGROUP:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
-            elif condition == "GRUPO":
+            elif condition == CONDITION_OUTGROUP:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_group.png'))
             
             original_width = effort_image.get_width()
@@ -1198,12 +1241,16 @@ def show_resting(title_text, max_time = 5):
     font = pygame.font.Font(None, 42)
 
     # Determine condition and use appropriate color
-    if "TI" in title_text:
+    if DISPLAY_NAME_SELF in title_text:
         text_color = (255, 0, 0)  # Red for self
         text = font.render(title_text, True, text_color)
         text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
-    elif "OTRO" in title_text:
-        text_color = (0, 0, 255)  # Blue for other
+    elif DISPLAY_NAME_INGROUP in title_text:
+        text_color = (0, 0, 255)  # Blue for in-group
+        text = font.render(title_text, True, text_color)
+        text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
+    elif DISPLAY_NAME_OUTGROUP in title_text:
+        text_color = (0, 128, 0)  # Green for out-group
         text = font.render(title_text, True, text_color)
         text_rect = text.get_rect(center=(resolution[0]/2, resolution[1]/10))
     else:
@@ -1247,12 +1294,13 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         for combination in actual_combinations_list:
             first_button_pressed_time, last_button_pressed_time = None, None
 
-            windows([f"Créditos para", combination[2]], K_SPACE, 1000)
+            display_name = get_display_name(combination[2])
+            windows([f"Créditos para", display_name], K_SPACE, 1000)
 
             effort_level = effort_table[combination[0]] if effort_table else None
 
             selection, key_pressed, decision_reaction_time = take_decision(
-                combination[0], combination[1], f"Créditos para {combination[2]}", 
+                combination[0], combination[1], f"Créditos para {display_name}", 
                 max_time = max_decision_time, test = test, effort_level = effort_level, 
                 condition = combination[2]
             )
@@ -1261,7 +1309,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
                 while selection not in [1, 2]:
                     slide(select_slide('TestingDecision'), False, K_SPACE)
                     selection, key_pressed, decision_reaction_time = take_decision(
-                        combination[0], combination[1], f"Créditos para {combination[2]}", 
+                        combination[0], combination[1], f"Créditos para {display_name}", 
                         max_time = max_decision_time, test = test, effort_level = effort_level,
                         condition = combination[2]
                     )
@@ -1269,11 +1317,11 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             if selection == 1:
                 presses_done, target_reached, first_press_time, last_press_time = show_effort_bar(
                     target_presses=combination[0], max_time=max_answer_time, 
-                    title_text=f"Créditos para {combination[2]}"
+                    title_text=f"Créditos para {display_name}"
                 )
                 earned_credits = combination[1] if target_reached else 0
             elif selection == 2:
-                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
+                show_resting(f"Créditos para {display_name}", max_time = max_resting_time)
                 earned_credits = 1
                 presses_done = 0
                 target_reached = True
@@ -1281,12 +1329,15 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
                 last_press_time = None
 
             # Enviar marcador de feedback
-            if combination[2] == "TI":
+            if combination[2] == CONDITION_SELF:
                 send_marker(MARKERS['FEEDBACK_SELF_START'], f"Feedback self - Credits: {earned_credits}")
                 windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+            elif combination[2] == CONDITION_OUTGROUP:
+                send_marker(MARKERS['FEEDBACK_GROUP_START'], f"Feedback out-group - Credits: {earned_credits}")
+                windows([f"{DISPLAY_NAME_OUTGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
             else:
-                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback other - Credits: {earned_credits}")
-                windows(["Otra persona ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback in-group - Credits: {earned_credits}")
+                windows([f"{DISPLAY_NAME_INGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
         
         send_marker(MARKERS['PRACTICE_END'], "Practice trials end")
         return
@@ -1313,18 +1364,19 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         for combination in actual_combinations_list:
             first_button_pressed_time, last_button_pressed_time = None, None
 
-            windows([f"Créditos para", combination[2]], K_SPACE, 1000)
+            display_name = get_display_name(combination[2])
+            windows([f"Créditos para", display_name], K_SPACE, 1000)
 
             effort_level = effort_table[combination[0]] if effort_table else None
 
             selection, key_pressed, decision_reaction_time = take_decision(
-                combination[0], combination[1], f"Créditos para {combination[2]}", 
+                combination[0], combination[1], f"Créditos para {display_name}", 
                 max_time = max_decision_time, test = test, effort_level = effort_level,
                 condition = combination[2]
             )
 
             if selection not in [1, 2]:
-                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
+                show_resting(f"Créditos para {display_name}", max_time = max_resting_time)
                 presses_done = 0
                 target_reached = False
                 first_press_time = None
@@ -1334,12 +1386,12 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             elif selection == 1:
                 presses_done, target_reached, first_press_time, last_press_time = show_effort_bar(
                     target_presses=combination[0], max_time=max_answer_time, 
-                    title_text=f"Créditos para {combination[2]}"
+                    title_text=f"Créditos para {display_name}"
                 )
                 earned_credits = combination[1] if target_reached else 0
 
             elif selection == 2:
-                show_resting(f"Créditos para {combination[2]}", max_time = max_resting_time)
+                show_resting(f"Créditos para {display_name}", max_time = max_resting_time)
                 earned_credits = 1
                 presses_done = 0
                 target_reached = True
@@ -1350,7 +1402,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             if file != None:
                 file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (
                     effort_table[combination[0]], combination[1], 
-                    "Self" if combination[2] == "TI" else ("Group" if combination[2] == "GRUPO" else "Other"), 
+                    "Self" if combination[2] == CONDITION_SELF else ("out-group" if combination[2] == CONDITION_OUTGROUP else "in-group"), 
                     "task" if selection == 1 else ("resting" if selection == 2 else "no decision"), 
                     presses_done if selection == 1 else 0, 
                     "True" if selection == 2 else target_reached, 
@@ -1360,18 +1412,18 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
                 file.flush()
             
             # Enviar marcador de feedback y mostrar créditos ganados
-            if combination[2] == "TI":
+            if combination[2] == CONDITION_SELF:
                 send_marker(MARKERS['FEEDBACK_SELF_START'], f"Feedback self - Credits: {earned_credits}")
                 send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
                 windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
-            elif combination[2] == "GRUPO":
-                send_marker(MARKERS['FEEDBACK_GROUP_START'], f"Feedback group - Credits: {earned_credits}")
+            elif combination[2] == CONDITION_OUTGROUP:
+                send_marker(MARKERS['FEEDBACK_GROUP_START'], f"Feedback out-group - Credits: {earned_credits}")
                 send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
-                windows(["Persona de otro grupo ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+                windows([f"{DISPLAY_NAME_OUTGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
             else:
-                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback other - Credits: {earned_credits}")
+                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback in-group - Credits: {earned_credits}")
                 send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
-                windows(["Otra persona ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+                windows([f"{DISPLAY_NAME_INGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
 
         send_marker(MARKERS['BLOCK_END'], f"Block {block_num + 1} end")
         
@@ -1440,7 +1492,6 @@ def main():
         max_presses_count = min_buttons
     send_marker(MARKERS['CALIBRATION_END'], f"Calibration end - Max presses: {max_presses_count}")
 
-    # ------------------- NEW: Loading screen and Pre-Instructions -------------------
     # Mostrar GIF de carga por 10 segundos
     slide(select_slide('Cargando'), False, K_SPACE)
     show_gif_loading(duration_ms=30000)
@@ -1448,7 +1499,7 @@ def main():
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Pre_Instructions'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_1'), False, K_SPACE)
-    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg"])
+    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg", "GROUP_schema.jpg"])
     slide(select_slide('Instructions_Decision_3'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_final'), False, K_SPACE)
 
@@ -1457,9 +1508,9 @@ def main():
     # effort table effort_levels_recalculated: effort_levels
     effort_table = dict(zip(effort_levels_recalculated, effort_levels))
 
-    self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["TI"]*len(effort_levels_recalculated)))
-    other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["OTRO"]*len(effort_levels_recalculated)))
-    group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["GRUPO"]*len(effort_levels_recalculated)))
+    self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, [CONDITION_SELF]*len(effort_levels_recalculated)))
+    other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, [CONDITION_INGROUP]*len(effort_levels_recalculated)))
+    group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, [CONDITION_OUTGROUP]*len(effort_levels_recalculated)))
 
     shuffle(self_combinations)
     shuffle(other_combinations)
@@ -1499,6 +1550,5 @@ def main():
     ends()
 
 
-# Experiment starts here...
 if __name__ == "__main__":
     main()
