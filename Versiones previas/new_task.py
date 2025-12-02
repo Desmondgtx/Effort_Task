@@ -103,9 +103,28 @@ date_name = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
 effort_levels = [50, 65, 80, 95]
 credits_levels = [2, 3, 4, 5]
 
+# Configuración de nombres de condiciones (beneficiarios)
+# Nombres internos en el código (para lógica y archivos de datos)
+CONDITION_SELF = "TI"
+CONDITION_INGROUP = "in-group"
+CONDITION_OUTGROUP = "out-group"
+
+# Nombres que se muestran en pantalla al participante
+DISPLAY_NAME_SELF = "TI"
+DISPLAY_NAME_INGROUP = "JUAN"
+DISPLAY_NAME_OUTGROUP = "PEDRO"
+
+# Color de relleno de la barra de esfuerzo (RGB)
+bar_fill_color = (255, 255, 0)  # Amarillo
+
+# Color del feedback general (RGB)
+feedback_color = (255, 255, 0)  # Amarillo
+
 # block_type = division, total
 block_type = "division"
+
 min_buttons = 10
+
 practice_iterations = 2  # CORRECCIÓN: Cambiar a 2 para repetir la práctica de esfuerzos
 decision_practice_trials = 2  # Cambiado de 4 a 2 trials de práctica
 
@@ -145,7 +164,7 @@ def select_slide(slide_name):
             u"Tarea de presionar la barra espaciadora:",
             " ",
             u"Abajo puedes encontrar un esquema de la tarea",
-            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos."
+            u"Tu meta es presionar la barra espaciadora el mayor número de veces en 5 segundos.",
         ],
         'Interlude_Casillas': [
             u"¡Muy bien! AHORA INTENTA SUPERAR TU RENDIMIENTO"
@@ -169,6 +188,8 @@ def select_slide(slide_name):
         'Cargando':[
             u"Ahora haz click para conectarte con otro jugador",
             u"",
+
+
         ],
         'Instructions_Decision_1': [
             u"Tarea de decisiones:",
@@ -188,8 +209,8 @@ def select_slide(slide_name):
             u"Tus decisiones serán completamente anónimas y confidenciales."
         ],
         'Instructions_Decision_2': [
-            u"A continuación puedes ver 2 casos de ejemplo,", 
-            u"el primero es para un caso de decisión para TI y el segundo para OTRO"
+            u"A continuación puedes ver 1 caso de ejemplo,", 
+            u"MULTICOLOR_LINE"
         ],
         'Instructions_Decision_3': [
             u"Cada ronda mostrará 1 crédito por Descansar, y {} o {} créditos".format((', '.join(str(x) for x in credits_levels[:-1])), credits_levels[-1]),
@@ -484,19 +505,52 @@ def cases_slide(text, key, images=[]):
     first_image = 0
 
     for line in text:
-        phrase = char.render(line, True, char_color)
-        phrasebox = phrase.get_rect(centerx=center[0], top=row)
-        screen.blit(phrase, phrasebox)
+        # Verificar si es la línea especial multicolor
+        if line == "MULTICOLOR_LINE":
+            # Renderizar texto multicolor usando las variables de display
+            # "este caso se aplicará para que TÚ o JUAN o PEDRO gane dinero"
+            parts = [
+                ("este caso se aplicará para que ", char_color),
+                (DISPLAY_NAME_SELF, (255, 0, 0)),  # Rojo
+                (" o ", char_color),
+                (DISPLAY_NAME_INGROUP, (0, 0, 255)),  # Azul
+                (" o ", char_color),
+                (DISPLAY_NAME_OUTGROUP, (0, 128, 0)),  # Verde
+                (" gane dinero", char_color)
+            ]
+            
+            # Calcular ancho total para centrar
+            total_width = sum(char.size(part[0])[0] for part in parts)
+            x_pos = center[0] - total_width // 2
+            
+            # Renderizar cada parte
+            for text_part, color in parts:
+                phrase = char.render(text_part, True, color)
+                screen.blit(phrase, (x_pos, row))
+                x_pos += char.size(text_part)[0]
+        else:
+            # Renderizar línea normal
+            phrase = char.render(line, True, char_color)
+            phrasebox = phrase.get_rect(centerx=center[0], top=row)
+            screen.blit(phrase, phrasebox)
         row += 40
 
-    for image in images:
-        # Cambiado para usar PNG si es necesario
-        picture = pygame.image.load(join("media", "images", image))
+    # Si hay solo 1 imagen, centrarla
+    if len(images) == 1:
+        picture = pygame.image.load(join("media", "images", images[0]))
         picture = pygame.transform.scale(picture, (screen.get_rect().width/2, screen.get_rect().width/2*picture.get_height()/picture.get_width()))        
         rect = picture.get_rect()
-        rect = rect.move(( (1+(2*first_image)) * screen.get_rect().width/4 - picture.get_width()/2, row + 40))
+        rect = rect.move((screen.get_rect().width/2 - picture.get_width()/2, row + 40))
         screen.blit(picture, rect)
-        first_image += 1
+    else:
+        # Múltiples imágenes lado a lado
+        for image in images:
+            picture = pygame.image.load(join("media", "images", image))
+            picture = pygame.transform.scale(picture, (screen.get_rect().width/2, screen.get_rect().width/2*picture.get_height()/picture.get_width()))        
+            rect = picture.get_rect()
+            rect = rect.move(( (1+(2*first_image)) * screen.get_rect().width/4 - picture.get_width()/2, row + 40))
+            screen.blit(picture, rect)
+            first_image += 1
 
     nextpage = charnext.render(u"Para continuar presione la tecla ESPACIO...", True, charnext_color)
     nextbox = nextpage.get_rect(left=15, bottom=resolution[1] - 15)
@@ -559,7 +613,12 @@ def windows(text, key=None, limit_time=0):
 
     font = pygame.font.Font(None, 90)
 
-    if "TI" in text[1] or "OTRO" in text[1]:
+    # Detectar si es una pantalla de "Créditos para [condición]"
+    # Verificar tanto los display names como los nombres internos originales
+    condition_names = [DISPLAY_NAME_SELF, DISPLAY_NAME_INGROUP, DISPLAY_NAME_OUTGROUP, "TI", "OTRO", "GRUPO"]
+    is_condition_screen = any(name in text[1] for name in condition_names)
+    
+    if is_condition_screen:
         phrase = font.render(text[0], True, (0, 0, 0))
         phrasebox = phrase.get_rect(centerx=center[0], top=row)
         screen.blit(phrase, phrasebox)
@@ -567,15 +626,22 @@ def windows(text, key=None, limit_time=0):
 
         font = pygame.font.Font(None, 140)
 
-        color = (255, 0, 0) if text[1] == "TI" else (0, 0, 255)
+        # Determinar color según la condición
+        if text[1] == DISPLAY_NAME_SELF or text[1] == "TI":
+            color = (255, 0, 0)  # Red for self
+        elif text[1] == DISPLAY_NAME_INGROUP or text[1] == "OTRO":
+            color = (0, 0, 255)  # Blue for in-group
+        else:
+            color = (0, 128, 0)  # Green for out-group
 
         phrase = font.render(text[1], True, color)
         phrasebox = phrase.get_rect(centerx=center[0], top=row)
         screen.blit(phrase, phrasebox)
     
     else:
+        # Feedback general - usar color amarillo
         for line in text:
-            phrase = font.render(line, True, (0, 128, 0))
+            phrase = font.render(line, True, feedback_color)
             phrasebox = phrase.get_rect(centerx=center[0], top=row)
             screen.blit(phrase, phrasebox)
             row += 120
@@ -728,12 +794,14 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
     screen.fill(background)
     
     # Determine color based on condition
-    if "TI" in title_text:
+    if DISPLAY_NAME_SELF in title_text:
         text_color = (255, 0, 0)  # Red for self
-    elif "OTRO" in title_text:
-        text_color = (0, 0, 255)  # Blue for other
-    elif "GRUPO" in title_text:
-        text_color = (0, 255, 0)
+    elif DISPLAY_NAME_INGROUP in title_text:
+        text_color = (0, 0, 255)  # Blue for in-group
+    elif DISPLAY_NAME_OUTGROUP in title_text:
+        text_color = (0, 128, 0)  # Green for out-group
+    else:
+        text_color = (0, 0, 0)  # Black for calibration/neutral
     
     # Draw title text at the top of the screen
     font = pygame.font.Font(None, 36)
@@ -1442,7 +1510,7 @@ def main():
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Pre_Instructions'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_1'), False, K_SPACE)
-    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg"])
+    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg"])
     slide(select_slide('Instructions_Decision_3'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_final'), False, K_SPACE)
 

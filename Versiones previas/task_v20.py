@@ -216,8 +216,8 @@ def select_slide(slide_name):
             u"Tus decisiones serán completamente anónimas y confidenciales."
         ],
         'Instructions_Decision_2': [
-            u"A continuación puedes ver 2 casos de ejemplo,", 
-            u"el primero es para un caso de decisión para TI y el segundo para OTRO"
+            u"A continuación puedes ver 1 caso de ejemplo,", 
+            u"este caso se aplicará para que TÚ o JUAN o PEDRO gane dinero"
         ],
         'Instructions_Decision_3': [
             u"Cada ronda mostrará 1 crédito por Descansar, y {} o {} créditos".format((', '.join(str(x) for x in credits_levels[:-1])), credits_levels[-1]),
@@ -386,10 +386,64 @@ def paragraph(text, key=None, no_foot=False, color=None):
         color = char_color
 
     for line in text:
-        phrase = char.render(line, True, color)
-        phrasebox = phrase.get_rect(centerx=center[0], top=row)
-        screen.blit(phrase, phrasebox)
+    # Verificar si la línea contiene palabras que deben ser coloreadas
+        if "TÚ" in line and "JUAN" in line and "PEDRO" in line:
+            # Renderizar texto multicolor
+            # Dividir la línea en partes
+            before_tu = line.split("TÚ")[0]
+            after_tu = line.split("TÚ")[1]
+            between_tu_juan = after_tu.split("JUAN")[0]
+            after_juan = after_tu.split("JUAN")[1]
+            between_juan_pedro = after_juan.split("PEDRO")[0]
+            after_pedro = after_juan.split("PEDRO")[1]
+            
+            # Calcular posición inicial para centrar todo
+            total_width = (char.size(before_tu)[0] + char.size("TÚ")[0] + char.size(between_tu_juan)[0] + 
+                        char.size("JUAN")[0] + char.size(between_juan_pedro)[0] + char.size("PEDRO")[0] + 
+                        char.size(after_pedro)[0])
+            x_pos = center[0] - total_width // 2
+            
+            # Renderizar cada parte con su color
+            # Parte antes de TÚ (negro)
+            phrase = char.render(before_tu, True, char_color)
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size(before_tu)[0]
+            
+            # TÚ (rojo)
+            phrase = char.render("TÚ", True, (255, 0, 0))
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size("TÚ")[0]
+            
+            # Parte entre TÚ y JUAN (negro)
+            phrase = char.render(between_tu_juan, True, char_color)
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size(between_tu_juan)[0]
+            
+            # JUAN (azul)
+            phrase = char.render("JUAN", True, (0, 0, 255))
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size("JUAN")[0]
+            
+            # Parte entre JUAN y PEDRO (negro)
+            phrase = char.render(between_juan_pedro, True, char_color)
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size(between_juan_pedro)[0]
+            
+            # PEDRO (verde)
+            phrase = char.render("PEDRO", True, (0, 128, 0))
+            screen.blit(phrase, (x_pos, row))
+            x_pos += char.size("PEDRO")[0]
+            
+            # Parte después de PEDRO (negro)
+            phrase = char.render(after_pedro, True, char_color)
+            screen.blit(phrase, (x_pos, row))
+        else:
+            # Renderizar línea normal
+            phrase = char.render(line, True, char_color)
+            phrasebox = phrase.get_rect(centerx=center[0], top=row)
+            screen.blit(phrase, phrasebox)
         row += 40
+
     if key != None:
         if key == K_SPACE:
             foot = u"Para continuar presione la tecla ESPACIO..."
@@ -622,7 +676,7 @@ def windows(text, key=None, limit_time=0):
     
     else:
         for line in text:
-            phrase = font.render(line, True, (0, 128, 0))
+            phrase = font.render(line, True, (255, 255, 0))
             phrasebox = phrase.get_rect(centerx=center[0], top=row)
             screen.blit(phrase, phrasebox)
             row += 120
@@ -1499,7 +1553,7 @@ def main():
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Pre_Instructions'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_1'), False, K_SPACE)
-    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg", "OTRO_schema.jpg", "GROUP_schema.jpg"])
+    cases_slide(select_slide('Instructions_Decision_2'), K_SPACE, ["TI_schema.jpg"])
     slide(select_slide('Instructions_Decision_3'), False, K_SPACE)
     slide(select_slide('Instructions_Decision_final'), False, K_SPACE)
 
