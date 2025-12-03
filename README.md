@@ -1,1 +1,0 @@
-# Prosocial Effort Task
