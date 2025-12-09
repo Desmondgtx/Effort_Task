@@ -15,7 +15,7 @@
 tested in Python 3.10.18
 """
 import pygame, sys, os, cv2, math
-from pygame.locals import FULLSCREEN, USEREVENT, KEYUP, K_SPACE, K_RETURN, K_ESCAPE, QUIT, Color, K_c, K_n, K_m, K_RIGHT
+from pygame.locals import FULLSCREEN, USEREVENT, KEYUP, KEYDOWN, K_SPACE, K_RETURN, K_ESCAPE, QUIT, Color, K_c, K_n, K_m, K_RIGHT
 from os.path import join
 from time import gmtime, strftime
 from math import ceil, sqrt
@@ -200,7 +200,7 @@ def render_line_with_colors(line, font, default_color, surface, row, center_x):
         x_pos += font.size(text_part)[0]
 
 # block_type = division, total
-block_type = "division"
+block_type = "total"
 
 min_buttons = 10
 
@@ -268,7 +268,7 @@ def select_slide(slide_name):
             u"Estas personas participan de otros estudios",
             u"y sus respuestas no afectan tu participación en este estudio.",
             " ",
-            u"En este experimento, tendrás que tomar decisiones que te afecten a {DISPLAY_NAME_SELF},"
+            u"En este experimento, tendrás que tomar decisiones que te afecten a {DISPLAY_NAME_SELF},",
             u"a la persona que {DISPLAY_NAME_INGROUP}, y a la persona que {DISPLAY_NAME_OUTGROUP}.",
             u"Estas decisiones serán confidenciales y anónimas.",
             u"Los otros participantes no saben que tú estás realizando este experimento",
@@ -665,7 +665,7 @@ def wait(key, limit_time):
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
                 pygame_exit()
-            elif event.type == KEYUP:
+            elif event.type == KEYDOWN:
                 if event.key == key:
                     switch = False
             elif event.type == TIME_OUT_WAIT and limit_time != 0:
@@ -751,7 +751,7 @@ def init():
         try:
             resolution = pygame.display.list_modes()[3]
         except:
-            resolution = (1280, 720)
+            resolution = (1920, 1080)
         screen = pygame.display.set_mode(resolution)
     center = (int(resolution[0] / 2), int(resolution[1] / 2))
     izq = (int(resolution[0] / 8), (int(resolution[1] / 8)*7))
@@ -1436,7 +1436,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         send_marker(MARKERS['PRACTICE_END'], "Practice trials end")
         return
     
-    # Experimental trials (no práctica)
+    # Experimental trials (sin contar)
     repetitions_per_block = 1
     
     for block_num in range(blocks_number):
@@ -1599,9 +1599,9 @@ def main():
     # effort table effort_levels_recalculated: effort_levels
     effort_table = dict(zip(effort_levels_recalculated, effort_levels))
 
-    self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["TI"]*len(effort_levels_recalculated)))
-    other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["OTRO"]*len(effort_levels_recalculated)))
-    group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["GRUPO"]*len(effort_levels_recalculated)))
+    self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["TI"]))
+    other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["OTRO"]))
+    group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["GRUPO"]))
 
     shuffle(self_combinations)
     shuffle(other_combinations)
