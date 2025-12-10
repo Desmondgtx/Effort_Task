@@ -204,10 +204,10 @@ block_type = "total"
 
 min_buttons = 10
 
-practice_iterations = 2  # Repeticiones de la práctica de esfuerzos
-decision_practice_trials = 2  # Trials de práctica
+practice_iterations = 1  # Repeticiones de la práctica de esfuerzos
+decision_practice_trials = 1  # Trials de práctica
 
-blocks_number = 3 # Número de bloques (cada bloque son 48 trials)
+blocks_number = 1 # Número de bloques (cada bloque son 48 trials)
 max_answer_time = 5  # Tiempo para trabajar = 5 segundos
 max_decision_time = 4  # Tiempo de decisión = 4 segundos 
 max_resting_time = 5  # Tiempo para descansar = 5 segundos
