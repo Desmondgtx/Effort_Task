@@ -116,8 +116,8 @@ CONDITION_OUTGROUP = "out-group"
 
 # Nombres que se muestran en pantalla al participante
 DISPLAY_NAME_SELF = "TI"
-DISPLAY_NAME_INGROUP = "Votará igual a ti"
-DISPLAY_NAME_OUTGROUP = "Votará distinto a ti"
+DISPLAY_NAME_INGROUP = "Votó como tú"
+DISPLAY_NAME_OUTGROUP = "Votó distinto a ti"
 
 # Color de relleno de la barra de esfuerzo (RGB)
 bar_fill_color = (255, 255, 0)  # Amarillo
@@ -228,9 +228,7 @@ def select_slide(slide_name):
 
     basic_slides = {
         'welcome': [
-            u"¡Bienvenido/a, a este experimento!",
-            " ",
-            u"Se te indicará paso a paso qué hacer."
+            u"¡Bienvenido/a, a este experimento!"
         ],
         'intro_block': [
             u"Ahora comenzará un bloque del experimento",
@@ -282,61 +280,6 @@ def select_slide(slide_name):
             u"por tanto realizan tareas distinta a la tuya",
             " ",
             u"Ahora haz click para conectarte con otro jugador"
-        ],
-        'Instructions_Decision_1': [
-            u"Tarea de decisiones:",
-            " ",
-            u"En esta tarea, tendrás que llenar la barra presionando la tecla espaciadora para ganar créditos.",
-            u"Los créditos que acumules serán convertidos en gift cards al final de la tarea",
-            " ",
-            u"Estos créditos pueden ser otorgados a {DISPLAY_NAME_SELF}",
-            u"para la persona que {DISPLAY_NAME_INGROUP}, o que {DISPLAY_NAME_OUTGROUP}",
-            u"En cada ronda de esta tarea, tendrás que elegir entre dos opciones:",
-            u'"Descansar": No tendrás que hacer nada y podrás descansar a cambio de 1 crédito.',
-            u'"Trabajar": Tendrás que rellenar la barra para ganar una mayor cantidad de créditos',
-            " ",
-            u"En algunas rondas (para {DISPLAY_NAME_SELF}), decidirás si quieres ganar créditos para ti mismo.",
-            u"En otras rondas decidirás si quieres ganar créditos para",
-            u"la persona que {DISPLAY_NAME_INGROUP}, o que {DISPLAY_NAME_OUTGROUP}",
-            u"Los créditos que ganes serán convertidos en giftcards para ti y para los otros participantes.",
-            u"Recuerda que tus decisiones serán anónimas y confidenciales,",
-            u"los otros participantes no sabrán lo que tú elijas",
-            u"Solo recibiárn sus gifcards como parte del experimento en el cual están siendo parte,",
-            u"sin que sepan que ese monto ha sido recolectado por ti."
-        ],
-        'Instructions_Decision_2': [
-            u"A continuación puedes un ejemplo, en caso de que los créditos sean para {DISPLAY_NAME_SELF}",
-            u"Habrán otras instancias donde los créditos sean",
-            u"para la persona que {DISPLAY_NAME_INGROUP}, o que {DISPLAY_NAME_OUTGROUP}"
-        ],
-        'Instructions_Decision_3': [
-            u"Cada ronda mostrará 1 crédito por Descansar, y {} o {} créditos".format((', '.join(str(x) for x in credits_levels[:-1])), credits_levels[-1]),
-            u"por completar exitosamente la tarea al rellenar la barra.",
-            " ",
-            u"Tienes un máximo de {} segundos para responder.".format(max_decision_time), 
-            u"Si tardas más de {} segundos, se darán 0 créditos a ti o a la otra persona.".format(max_decision_time),
-            " ",
-            u"Si eliges trabajar para ganar más créditos,", 
-            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.",
-            u"De lo contrario, no se otorgarán créditos para esa ronda.",
-            " ",
-            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos."
-        ],
-        'Instructions_Decision_final': [
-            u"Recuerda, en cada ronda:",
-            " ",
-            u"• Verás si los créditos serán para TI, para la persona que {DISPLAY_NAME_INGROUP}, o que {DISPLAY_NAME_OUTGROUP}",
-            " ",
-            u"• Debes escoger entre dos opciones: Una opción te da 1 crédito por descansar,", 
-            u"la otra te da más créditos pero debes rellenar la barra.",
-            " ",
-            u"• Tendrás {} segundos para tomar una decisión, de lo contrario se darán 0 créditos para esa ronda.".format(max_decision_time),
-            " ",
-            u"Continúa con la página siguiente para una ronda de práctica.", 
-            u"Tu objetivo es rellenar la barra presionando repetidamente la tecla Espacio.", 
-            u"Verás un círculo con distintos espacios llenos.",
-            u"Estos círculos indican los distintos niveles de esfuerzo que tendrás que ralizar",
-            u"Ya que es sólo práctica, no se obtendrás créditos en estas rondas."
         ],
         'Effort_ending': [
             u"¡Genial! ya has practicado cómo rellenar la barra", 
@@ -1589,10 +1532,6 @@ def main():
 
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Pre_Instructions'), False, K_RIGHT)
-    slide(select_slide('Instructions_Decision_1'), False, K_RIGHT)
-    cases_slide(select_slide('Instructions_Decision_2'), K_RIGHT, ["TI_schema.jpg"])
-    slide(select_slide('Instructions_Decision_3'), False, K_RIGHT)
-    slide(select_slide('Instructions_Decision_final'), False, K_RIGHT)
 
     # ------------------------ Training Section -----------------------------
     effort_levels_recalculated = [ceil(max_presses_count*(effort/100)) for effort in effort_levels]
