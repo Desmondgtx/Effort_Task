@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Para compilar
-# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task" Prosocial_Effort_Task.py
+# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task_No_Instructions" Prosocial_Effort_Task_No_Instructions.py
 
 
 # Important parameters
