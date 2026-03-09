@@ -204,10 +204,10 @@ block_type = "total"
 
 min_buttons = 10
 
-practice_iterations = 1  # Repeticiones de la práctica de esfuerzos
-decision_practice_trials = 1  # Trials de práctica
+practice_iterations = 2  # Repeticiones de la práctica de esfuerzos
+decision_practice_trials = 2  # Trials de práctica
 
-blocks_number = 1 # Número de bloques (cada bloque son 48 trials)
+blocks_number = 3 # Número de bloques (cada bloque son 48 trials)
 max_answer_time = 5  # Tiempo para trabajar = 5 segundos
 max_decision_time = 4  # Tiempo de decisión = 4 segundos 
 max_resting_time = 5  # Tiempo para descansar = 5 segundos
@@ -696,6 +696,15 @@ def init():
         except:
             resolution = (1920, 1080)
         screen = pygame.display.set_mode(resolution)
+
+
+    # Forzar el foco de la ventana para solucionar problemas con teclado
+    pygame.event.clear()  # Limpiar eventos pendientes
+    pygame.display.flip()
+    pygame.time.delay(100)  # Pequeña pausa para que Windows establezca el foco
+    pygame.event.pump()  # Procesar eventos del sistema
+    pygame.event.clear()  # Limpiar nuevamente
+
     center = (int(resolution[0] / 2), int(resolution[1] / 2))
     izq = (int(resolution[0] / 8), (int(resolution[1] / 8)*7))
     der = ((int(resolution[0] / 8)*7), (int(resolution[1] / 8)*7))

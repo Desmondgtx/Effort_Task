@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Para compilar
-# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task" Prosocial_Effort_Task.py
+# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task" finalfinal.py
 
 
 # Important parameters
@@ -200,7 +200,7 @@ def render_line_with_colors(line, font, default_color, surface, row, center_x):
         x_pos += font.size(text_part)[0]
 
 # block_type = division, total
-block_type = "total"
+block_type = "division"
 
 min_buttons = 10
 
@@ -268,7 +268,7 @@ def select_slide(slide_name):
             u"Estas personas participan de otros estudios",
             u"y sus respuestas no afectan tu participación en este estudio.",
             " ",
-            u"En este experimento, tendrás que tomar decisiones que te afecten a {DISPLAY_NAME_SELF},",
+            u"En este experimento, tendrás que tomar decisiones que te afecten a {DISPLAY_NAME_SELF},"
             u"a la persona que {DISPLAY_NAME_INGROUP}, y a la persona que {DISPLAY_NAME_OUTGROUP}.",
             u"Estas decisiones serán confidenciales y anónimas.",
             u"Los otros participantes no saben que tú estás realizando este experimento",
@@ -751,8 +751,16 @@ def init():
         try:
             resolution = pygame.display.list_modes()[3]
         except:
-            resolution = (1920, 1080)
+            resolution = (1280, 720)
         screen = pygame.display.set_mode(resolution)
+    
+    # Forzar el foco de la ventana para solucionar problemas con teclado
+    pygame.event.clear()  # Limpiar eventos pendientes
+    pygame.display.flip()
+    pygame.time.delay(100)  # Pequeña pausa para que Windows establezca el foco
+    pygame.event.pump()  # Procesar eventos del sistema
+    pygame.event.clear()  # Limpiar nuevamente
+    
     center = (int(resolution[0] / 2), int(resolution[1] / 2))
     izq = (int(resolution[0] / 8), (int(resolution[1] / 8)*7))
     der = ((int(resolution[0] / 8)*7), (int(resolution[1] / 8)*7))
@@ -1436,7 +1444,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         send_marker(MARKERS['PRACTICE_END'], "Practice trials end")
         return
     
-    # Experimental trials (sin contar)
+    # Experimental trials (no práctica)
     repetitions_per_block = 1
     
     for block_num in range(blocks_number):
@@ -1454,8 +1462,17 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             break
 
         shuffle(actual_combinations_list)
-
+        
+        # DEBUG: Imprimir cantidad de trials en este bloque
+        print(f"\n========== BLOQUE {block_num + 1} ==========")
+        print(f"Total trials en este bloque: {len(actual_combinations_list)}")
+        print(f"==========================================\n")
+        
+        trial_counter = 0
         for combination in actual_combinations_list:
+            trial_counter += 1
+            print(f"Trial {trial_counter}/{len(actual_combinations_list)} - Condición: {combination[2]}")
+            
             first_button_pressed_time, last_button_pressed_time = None, None
 
             display_name = get_display_name(combination[2])
@@ -1602,7 +1619,7 @@ def main():
     self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["TI"]))
     other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["OTRO"]))
     group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["GRUPO"]))
-
+    
     shuffle(self_combinations)
     shuffle(other_combinations)
     shuffle(group_combinations)
