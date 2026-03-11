@@ -1,0 +1,49 @@
+NivelEsfuerzo,NivelReward,Condición,Decisión,PresionesHechas,ÉxitoTarea,CréditosGanados,TiempoReacciónDecisión,TiempoReacciónPrimerPresión,TiempoReacciónÚltimaPresión
+95,3,Self,resting,0,True,1,1469,None,None
+50,2,Self,task,21,True,2,955,447,2704
+95,4,Other,task,40,True,4,2082,293,4534
+50,5,Group,task,12,False,0,1055,578,4641
+80,3,Group,no decision,0,False,0,None,None,None
+50,4,Self,task,21,True,4,997,456,3018
+80,5,Group,task,17,False,0,1887,1135,4886
+95,2,Group,task,40,True,2,976,361,4684
+95,5,Other,no decision,0,False,0,None,None,None
+65,5,Group,task,28,True,5,2228,435,3795
+95,5,Group,resting,0,True,1,1211,None,None
+50,2,Other,task,21,True,2,1328,592,3117
+80,2,Other,task,34,True,2,957,456,4114
+65,5,Self,no decision,0,False,0,None,None,None
+80,3,Other,task,33,False,0,1509,1009,4899
+65,5,Other,no decision,0,False,0,None,None,None
+50,4,Other,resting,0,True,1,1110,None,None
+80,2,Self,task,24,False,0,1597,1723,4848
+65,2,Group,task,28,True,2,1702,425,3212
+50,3,Self,task,21,True,3,1899,591,2869
+80,4,Self,task,34,True,4,2084,727,4155
+50,3,Group,task,21,True,3,972,445,2798
+80,5,Self,resting,0,True,1,1817,None,None
+80,2,Group,task,32,False,0,1495,534,4865
+95,4,Self,resting,0,True,1,1600,None,None
+65,3,Other,task,28,True,3,1121,616,3664
+50,3,Other,task,21,True,3,987,449,2569
+65,2,Self,no decision,0,False,0,None,None,None
+95,4,Group,resting,0,True,1,1168,None,None
+50,2,Group,task,21,True,2,2079,1096,3841
+65,3,Group,task,28,True,3,3369,586,4358
+80,4,Group,task,34,True,4,1167,557,4421
+80,4,Other,resting,0,True,1,1380,None,None
+65,2,Other,task,28,True,2,1024,424,3283
+95,5,Self,resting,0,True,1,1306,None,None
+50,4,Group,task,21,True,4,1928,81,3012
+80,5,Other,resting,0,True,1,2040,None,None
+80,3,Self,task,34,True,3,3259,443,4374
+65,4,Group,task,28,True,4,1631,476,4820
+95,2,Other,resting,0,True,1,1926,None,None
+65,3,Self,task,28,True,3,939,98,2956
+95,3,Other,resting,0,True,1,913,None,None
+95,2,Self,resting,0,True,1,1700,None,None
+95,3,Group,resting,0,True,1,878,None,None
+65,4,Other,task,28,True,4,823,671,3856
+50,5,Other,task,21,True,5,1097,465,2526
+65,4,Self,task,28,True,4,930,470,4436
+50,5,Self,task,21,True,5,1187,315,2509

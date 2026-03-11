@@ -116,11 +116,11 @@ CONDITION_OUTGROUP = "out-group"
 
 # Nombres que se muestran en pantalla al participante
 DISPLAY_NAME_SELF = "TI"
-DISPLAY_NAME_INGROUP = "Votará igual a ti"
-DISPLAY_NAME_OUTGROUP = "Votará distinto a ti"
+DISPLAY_NAME_INGROUP = "Votó igual a ti"
+DISPLAY_NAME_OUTGROUP = "Votó distinto a ti"
 
 # Color de relleno de la barra de esfuerzo (RGB)
-bar_fill_color = (255, 255, 0)  # Amarillo
+bar_fill_color = (230, 230, 0)  # Amarillo
 
 # Color del feedback general (RGB)
 feedback_color = (200, 200, 0)  # Amarillo
@@ -204,10 +204,10 @@ block_type = "division"
 
 min_buttons = 10
 
-practice_iterations = 2  # Repeticiones de la práctica de esfuerzos
-decision_practice_trials = 2  # Trials de práctica
+practice_iterations = 1  # Repeticiones de la práctica de esfuerzos
+decision_practice_trials = 1  # Trials de práctica
 
-blocks_number = 3 # Número de bloques (cada bloque son 48 trials)
+blocks_number = 1 # Número de bloques (cada bloque son 48 trials)
 max_answer_time = 5  # Tiempo para trabajar = 5 segundos
 max_decision_time = 4  # Tiempo de decisión = 4 segundos 
 max_resting_time = 5  # Tiempo para descansar = 5 segundos

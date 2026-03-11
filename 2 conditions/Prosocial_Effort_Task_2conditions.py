@@ -2,7 +2,7 @@
 # coding=utf-8
 
 # Para compilar
-# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task_No_Instructions" Prosocial_Effort_Task_No_Instructions.py
+# pyinstaller --onefile --add-data "media;media" --add-data "data;data" --hidden-import=pylsl --hidden-import=pygame --collect-all pylsl --name "Prosocial_Effort_Task" finalfinal.py
 
 
 # Important parameters
@@ -30,7 +30,6 @@ MARKERS = {
     # Eventos de decisión
     'DECISION_START_SELF': 100,      # Inicio decisión para TI
     'DECISION_START_OTHER': 101,     # Inicio decisión para OTRO
-    'DECISION_START_GROUP': 102,     # Inicio decisión para GRUPO
     'RESPONSE_WORK': 110,             # Respuesta: trabajar
     'RESPONSE_REST': 111,             # Respuesta: descansar
     'RESPONSE_OMISSION': 112,         # Sin respuesta (timeout)
@@ -43,7 +42,6 @@ MARKERS = {
     # Eventos de feedback
     'FEEDBACK_SELF_START': 130,       # Inicio feedback TI
     'FEEDBACK_OTHER_START': 131,      # Inicio feedback OTRO
-    'FEEDBACK_GROUP_START': 132,      # Inicio feedback GRUPO
     'FEEDBACK_CREDITS': 140,          # Créditos ganados (seguido por el número)
     
     # Eventos de bloque y experimento
@@ -111,13 +109,11 @@ credits_levels = [2, 3, 4, 5]
 # Configuración de nombres de condiciones (beneficiarios)
 # Nombres internos en el código (para lógica y archivos de datos)
 CONDITION_SELF = "TI"
-CONDITION_INGROUP = "in-group"
-CONDITION_OUTGROUP = "out-group"
+CONDITION_OTHER = "in-group"
 
 # Nombres que se muestran en pantalla al participante
 DISPLAY_NAME_SELF = "TI"
-DISPLAY_NAME_INGROUP = "Votó igual a ti"
-DISPLAY_NAME_OUTGROUP = "Votó distinto a ti"
+DISPLAY_NAME_OTHER = "Votó igual a ti"
 
 # Color de relleno de la barra de esfuerzo (RGB)
 bar_fill_color = (230, 230, 0)  # Amarillo
@@ -130,9 +126,7 @@ def get_display_name(condition):
     if condition == "TI":
         return DISPLAY_NAME_SELF
     elif condition == "OTRO":
-        return DISPLAY_NAME_INGROUP
-    elif condition == "GRUPO":
-        return DISPLAY_NAME_OUTGROUP
+        return DISPLAY_NAME_OTHER
     else:
         return condition
 
@@ -144,8 +138,7 @@ def render_multicolor_line(line, font, default_color):
     # Definir los marcadores y sus reemplazos con colores
     markers = [
         ("{DISPLAY_NAME_SELF}", DISPLAY_NAME_SELF, (255, 0, 0)),      # Rojo
-        ("{DISPLAY_NAME_INGROUP}", DISPLAY_NAME_INGROUP, (0, 0, 255)),  # Azul
-        ("{DISPLAY_NAME_OUTGROUP}", DISPLAY_NAME_OUTGROUP, (0, 128, 0))  # Verde
+        ("{DISPLAY_NAME_OTHER}", DISPLAY_NAME_OTHER, (0, 0, 255))     # Azul
     ]
     
     # Verificar si la línea contiene algún marcador
@@ -200,14 +193,14 @@ def render_line_with_colors(line, font, default_color, surface, row, center_x):
         x_pos += font.size(text_part)[0]
 
 # block_type = division, total
-block_type = "total"
+block_type = "division"
 
 min_buttons = 10
 
-practice_iterations = 2  # Repeticiones de la práctica de esfuerzos
-decision_practice_trials = 2  # Trials de práctica
+practice_iterations = 1  # Repeticiones de la práctica de esfuerzos
+decision_practice_trials = 1  # Trials de práctica
 
-blocks_number = 3 # Número de bloques (cada bloque son 48 trials)
+blocks_number = 1 # Número de bloques (cada bloque son 32 trials)
 max_answer_time = 5  # Tiempo para trabajar = 5 segundos
 max_decision_time = 4  # Tiempo de decisión = 4 segundos 
 max_resting_time = 5  # Tiempo para descansar = 5 segundos
@@ -228,7 +221,9 @@ def select_slide(slide_name):
 
     basic_slides = {
         'welcome': [
-            u"¡Bienvenido/a, a este experimento!"
+            u"¡Bienvenido/a, a este experimento!",
+            " ",
+            u"Se te indicará paso a paso qué hacer."
         ],
         'intro_block': [
             u"Ahora comenzará un bloque del experimento",
@@ -259,31 +254,85 @@ def select_slide(slide_name):
             u"Presiona Espacio para continuar con la próxima tarea."
         ],
         'Pre_Instructions': [
-            u"Ya has sido conectado con otros dos participantes de nuestros estudios.",
-            u"Según nuestra base de datos, uno de estos participantes", 
-            u"{DISPLAY_NAME_INGROUP} en la próxima elección presidencial,",
-            u"mientras que el otro {DISPLAY_NAME_OUTGROUP}.",
-            u"Estas personas participan de otros estudios",
+            u"Ya has sido conectado con otro participante de nuestros estudios.",
+            u"Según nuestra base de datos, este participante", 
+            u"{DISPLAY_NAME_OTHER} en la próxima elección presidencial.",
+            u"Esta persona participa de otros estudios",
             u"y sus respuestas no afectan tu participación en este estudio.",
             " ",
             u"En este experimento, tendrás que tomar decisiones que te afecten a {DISPLAY_NAME_SELF},",
-            u"a la persona que {DISPLAY_NAME_INGROUP}, y a la persona que {DISPLAY_NAME_OUTGROUP}.",
+            u"y a la persona que {DISPLAY_NAME_OTHER}.",
             u"Estas decisiones serán confidenciales y anónimas.",
-            u"Los otros participantes no saben que tú estás realizando este experimento",
+            u"El otro participante no sabe que tú estás realizando este experimento",
             u"Haz click para continuar con las instrucciones"
         ],
         'Cargando':[
             u"En este experimento, realizarás una tarea de toma de decisiones.",
-            u"En esta tarea, es posible que tomes decisiones que afecten a otras personas,",
-            u"para eso debemos conectarte con otros participantes de nuestros estudios.",
-            u"Estos participantes están realizando otros experimentos,",
-            u"por tanto realizan tareas distinta a la tuya",
+            u"En esta tarea, es posible que tomes decisiones que afecten a otra persona,",
+            u"para eso debemos conectarte con otro participante de nuestros estudios.",
+            u"Este participante está realizando otro experimento,",
+            u"por tanto realiza una tarea distinta a la tuya",
             " ",
             u"Ahora haz click para conectarte con otro jugador"
         ],
+        'Instructions_Decision_1': [
+            u"Tarea de decisiones:",
+            " ",
+            u"En esta tarea, tendrás que llenar la barra presionando la tecla espaciadora para ganar créditos.",
+            u"Los créditos que acumules serán convertidos en gift cards al final de la tarea",
+            " ",
+            u"Estos créditos pueden ser otorgados a {DISPLAY_NAME_SELF},",
+            u"o para la persona que {DISPLAY_NAME_OTHER}.",
+            u"En cada ronda de esta tarea, tendrás que elegir entre dos opciones:",
+            u'"Descansar": No tendrás que hacer nada y podrás descansar a cambio de 1 crédito.',
+            u'"Trabajar": Tendrás que rellenar la barra para ganar una mayor cantidad de créditos',
+            " ",
+            u"En algunas rondas (para {DISPLAY_NAME_SELF}), decidirás si quieres ganar créditos para ti mismo.",
+            u"En otras rondas decidirás si quieres ganar créditos para",
+            u"la persona que {DISPLAY_NAME_OTHER}.",
+            u"Los créditos que ganes serán convertidos en giftcards para ti y para el otro participante.",
+            u"Recuerda que tus decisiones serán anónimas y confidenciales,",
+            u"el otro participante no sabrá lo que tú elijas",
+            u"Solo recibirá sus gifcards como parte del experimento en el cual está siendo parte,",
+            u"sin que sepa que ese monto ha sido recolectado por ti."
+        ],
+        'Instructions_Decision_2': [
+            u"A continuación puedes un ejemplo, en caso de que los créditos sean para {DISPLAY_NAME_SELF}",
+            u"Habrán otras instancias donde los créditos sean",
+            u"para la persona que {DISPLAY_NAME_OTHER}."
+        ],
+        'Instructions_Decision_3': [
+            u"Cada ronda mostrará 1 crédito por Descansar, y {} o {} créditos".format((', '.join(str(x) for x in credits_levels[:-1])), credits_levels[-1]),
+            u"por completar exitosamente la tarea al rellenar la barra.",
+            " ",
+            u"Tienes un máximo de {} segundos para responder.".format(max_decision_time), 
+            u"Si tardas más de {} segundos, se darán 0 créditos a ti o a la otra persona.".format(max_decision_time),
+            " ",
+            u"Si eliges trabajar para ganar más créditos,", 
+            u"debes rellenar la barra, presionando Espacio repetidamente durante 5 segundos.",
+            u"De lo contrario, no se otorgarán créditos para esa ronda.",
+            " ",
+            u"Siempre que elijas la opción Descansar, podrás reposar durante 5 segundos."
+        ],
+        'Instructions_Decision_final': [
+            u"Recuerda, en cada ronda:",
+            " ",
+            u"• Verás si los créditos serán para {DISPLAY_NAME_SELF}, o para la persona que {DISPLAY_NAME_OTHER}",
+            " ",
+            u"• Debes escoger entre dos opciones: Una opción te da 1 crédito por descansar,", 
+            u"la otra te da más créditos pero debes rellenar la barra.",
+            " ",
+            u"• Tendrás {} segundos para tomar una decisión, de lo contrario se darán 0 créditos para esa ronda.".format(max_decision_time),
+            " ",
+            u"Continúa con la página siguiente para una ronda de práctica.", 
+            u"Tu objetivo es rellenar la barra presionando repetidamente la tecla Espacio.", 
+            u"Verás un círculo con distintos espacios llenos.",
+            u"Estos círculos indican los distintos niveles de esfuerzo que tendrás que ralizar",
+            u"Ya que es sólo práctica, no se obtendrás créditos en estas rondas."
+        ],
         'Effort_ending': [
             u"¡Genial! ya has practicado cómo rellenar la barra", 
-            u"para así ganar créditos para TI, para la persona que {DISPLAY_NAME_INGROUP}, o que {DISPLAY_NAME_OUTGROUP}",
+            u"para así ganar créditos para {DISPLAY_NAME_SELF}, o para la persona que {DISPLAY_NAME_OTHER}.",
             " ",
             u"Ahora tendrás unas rondas de práctica similares a la tarea que tendrás posteriormente.",
             u"Tendrás que tomar decisiones entre descansar o llenar la barra presionando la tecla espaciadora",
@@ -642,7 +691,7 @@ def windows(text, key=None, limit_time=0):
 
     # Detectar si es una pantalla de "Créditos para [condición]"
     # Verificar tanto los display names como los nombres internos originales
-    condition_names = [DISPLAY_NAME_SELF, DISPLAY_NAME_INGROUP, DISPLAY_NAME_OUTGROUP, "TI", "OTRO", "GRUPO"]
+    condition_names = [DISPLAY_NAME_SELF, DISPLAY_NAME_OTHER, "TI", "OTRO"]
     is_condition_screen = any(name in text[1] for name in condition_names)
     
     if is_condition_screen:
@@ -656,10 +705,8 @@ def windows(text, key=None, limit_time=0):
         # Determinar color según la condición
         if text[1] == DISPLAY_NAME_SELF or text[1] == "TI":
             color = (255, 0, 0)  # Red for self
-        elif text[1] == DISPLAY_NAME_INGROUP or text[1] == "OTRO":
-            color = (0, 0, 255)  # Blue for in-group
         else:
-            color = (0, 128, 0)  # Green for out-group
+            color = (0, 0, 255)  # Blue for other
 
         phrase = font.render(text[1], True, color)
         phrasebox = phrase.get_rect(centerx=center[0], top=row)
@@ -694,17 +741,16 @@ def init():
         try:
             resolution = pygame.display.list_modes()[3]
         except:
-            resolution = (1920, 1080)
+            resolution = (1280, 720)
         screen = pygame.display.set_mode(resolution)
-
-
+    
     # Forzar el foco de la ventana para solucionar problemas con teclado
     pygame.event.clear()  # Limpiar eventos pendientes
     pygame.display.flip()
     pygame.time.delay(100)  # Pequeña pausa para que Windows establezca el foco
     pygame.event.pump()  # Procesar eventos del sistema
     pygame.event.clear()  # Limpiar nuevamente
-
+    
     center = (int(resolution[0] / 2), int(resolution[1] / 2))
     izq = (int(resolution[0] / 8), (int(resolution[1] / 8)*7))
     der = ((int(resolution[0] / 8)*7), (int(resolution[1] / 8)*7))
@@ -832,10 +878,8 @@ def show_effort_bar(target_presses, max_time=5, title_text="", is_calibration=Fa
     # Determine color based on condition
     if DISPLAY_NAME_SELF in title_text:
         text_color = (255, 0, 0)  # Red for self
-    elif DISPLAY_NAME_INGROUP in title_text:
-        text_color = (0, 0, 255)  # Blue for in-group
-    elif DISPLAY_NAME_OUTGROUP in title_text:
-        text_color = (0, 128, 0)  # Green for out-group
+    elif DISPLAY_NAME_OTHER in title_text:
+        text_color = (0, 0, 255)  # Blue for other
     else:
         text_color = (0, 0, 0)  # Black for calibration/neutral
     
@@ -934,8 +978,6 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
     # Enviar marcador de inicio de decisión según condición
     if condition == "TI":
         send_marker(MARKERS['DECISION_START_SELF'], f"Decision start - Self - Credits: {credits_number}")
-    elif condition == "GRUPO":
-        send_marker(MARKERS['DECISION_START_GROUP'], f"Decision start - Group - Credits: {credits_number}")
     else:
         send_marker(MARKERS['DECISION_START_OTHER'], f"Decision start - Other - Credits: {credits_number}")
     
@@ -948,13 +990,10 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
         text_color = (255, 0, 0)  # Red for self
         display_name = DISPLAY_NAME_SELF
     elif condition == "OTRO":
-        text_color = (0, 0, 255)  # Blue for in-group
-        display_name = DISPLAY_NAME_INGROUP
-    elif condition == "GRUPO":
-        text_color = (0, 128, 0)  # Green for out-group
-        display_name = DISPLAY_NAME_OUTGROUP
+        text_color = (0, 0, 255)  # Blue for other
+        display_name = DISPLAY_NAME_OTHER
     else:
-        text_color = (0, 128, 0)  # Green for neutral
+        text_color = (0, 0, 255)  # Blue for neutral
         display_name = ""
 
     # Renderizar "Créditos para" en la primera línea
@@ -1013,11 +1052,9 @@ def take_decision(buttons_number, credits_number, title_text, max_time = 5, test
                 effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
             elif condition == "OTRO":
                 effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
-            elif condition == "GRUPO":
-                effort_image = pygame.image.load(join('media', f'{effort_level}_group.png'))
             else:
-                # Fallback to self version if condition not specified
-                effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
+                # Fallback to other version if condition not specified
+                effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
             
             # CORRECCIÓN: Escalar manteniendo la proporción original
             original_width = effort_image.get_width()
@@ -1218,10 +1255,8 @@ def _redraw_decision_screen_with_box(text_color, display_name, credits_number,
         try:
             if condition == "TI":
                 effort_image = pygame.image.load(join('media', f'{effort_level}_self.png'))
-            elif condition == "OTRO":
+            else:
                 effort_image = pygame.image.load(join('media', f'{effort_level}_other.png'))
-            elif condition == "GRUPO":
-                effort_image = pygame.image.load(join('media', f'{effort_level}_group.png'))
             
             original_width = effort_image.get_width()
             original_height = effort_image.get_height()
@@ -1325,7 +1360,7 @@ def show_resting(title_text, max_time = 5):
             return
 
 
-def task(self_combinations, other_combinations, group_combinations, blocks_number, block_type, max_answer_time, 
+def task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, 
          test = False, decision_practice_trials = 1, file = None, effort_table = None):
     # Para práctica
     if test:
@@ -1333,8 +1368,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         import random
         practice_self = random.sample(self_combinations, min(2, len(self_combinations)))
         practice_other = random.sample(other_combinations, min(2, len(other_combinations)))
-        practice_group = random.sample(group_combinations, min(2, len(group_combinations)))
-        actual_combinations_list = practice_self + practice_other + practice_group
+        actual_combinations_list = practice_self + practice_other
         shuffle(actual_combinations_list)
         
         for combination in actual_combinations_list:
@@ -1378,17 +1412,14 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             if combination[2] == "TI":
                 send_marker(MARKERS['FEEDBACK_SELF_START'], f"Feedback self - Credits: {earned_credits}")
                 windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
-            elif combination[2] == "GRUPO":
-                send_marker(MARKERS['FEEDBACK_GROUP_START'], f"Feedback out-group - Credits: {earned_credits}")
-                windows([f"{DISPLAY_NAME_OUTGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
             else:
-                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback in-group - Credits: {earned_credits}")
-                windows([f"{DISPLAY_NAME_INGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback other - Credits: {earned_credits}")
+                windows([f"{DISPLAY_NAME_OTHER} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
         
         send_marker(MARKERS['PRACTICE_END'], "Practice trials end")
         return
     
-    # Experimental trials (sin contar)
+    # Experimental trials (no práctica)
     repetitions_per_block = 1
     
     for block_num in range(blocks_number):
@@ -1397,17 +1428,25 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
         if block_type == "division":
             block_self_combinations = self_combinations * repetitions_per_block
             block_other_combinations = other_combinations * repetitions_per_block
-            block_group_combinations = group_combinations * repetitions_per_block
-            actual_combinations_list = block_self_combinations + block_other_combinations + block_group_combinations
+            actual_combinations_list = block_self_combinations + block_other_combinations
         elif block_type == "total":
-            actual_combinations_list = (self_combinations + other_combinations + group_combinations) * repetitions_per_block
+            actual_combinations_list = (self_combinations + other_combinations) * repetitions_per_block
         else:
             print("Tipo de bloque no reconocido")
             break
 
         shuffle(actual_combinations_list)
-
+        
+        # DEBUG: Imprimir cantidad de trials en este bloque
+        print(f"\n========== BLOQUE {block_num + 1} ==========")
+        print(f"Total trials en este bloque: {len(actual_combinations_list)}")
+        print(f"==========================================\n")
+        
+        trial_counter = 0
         for combination in actual_combinations_list:
+            trial_counter += 1
+            print(f"Trial {trial_counter}/{len(actual_combinations_list)} - Condición: {combination[2]}")
+            
             first_button_pressed_time, last_button_pressed_time = None, None
 
             display_name = get_display_name(combination[2])
@@ -1448,7 +1487,7 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
             if file != None:
                 file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (
                     effort_table[combination[0]], combination[1], 
-                    "Self" if combination[2] == "TI" else ("Group" if combination[2] == "GRUPO" else "Other"), 
+                    "Self" if combination[2] == "TI" else "Other", 
                     "task" if selection == 1 else ("resting" if selection == 2 else "no decision"), 
                     presses_done if selection == 1 else 0, 
                     "True" if selection == 2 else target_reached, 
@@ -1462,14 +1501,10 @@ def task(self_combinations, other_combinations, group_combinations, blocks_numbe
                 send_marker(MARKERS['FEEDBACK_SELF_START'], f"Feedback self - Credits: {earned_credits}")
                 send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
                 windows(["Has ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
-            elif combination[2] == "GRUPO":
-                send_marker(MARKERS['FEEDBACK_GROUP_START'], f"Feedback out-group - Credits: {earned_credits}")
-                send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
-                windows([f"{DISPLAY_NAME_OUTGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
             else:
-                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback in-group - Credits: {earned_credits}")
+                send_marker(MARKERS['FEEDBACK_OTHER_START'], f"Feedback other - Credits: {earned_credits}")
                 send_marker(MARKERS['FEEDBACK_CREDITS'] + earned_credits, f"Credits earned: {earned_credits}")
-                windows([f"{DISPLAY_NAME_INGROUP} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
+                windows([f"{DISPLAY_NAME_OTHER} ha ganado", f"{earned_credits} créditos"], K_SPACE, 1000)
 
         send_marker(MARKERS['BLOCK_END'], f"Block {block_num + 1} end")
         
@@ -1541,6 +1576,10 @@ def main():
 
     # ------------------- Decision instructions block ------------------------
     slide(select_slide('Pre_Instructions'), False, K_RIGHT)
+    slide(select_slide('Instructions_Decision_1'), False, K_RIGHT)
+    cases_slide(select_slide('Instructions_Decision_2'), K_RIGHT, ["TI_schema.jpg"])
+    slide(select_slide('Instructions_Decision_3'), False, K_RIGHT)
+    slide(select_slide('Instructions_Decision_final'), False, K_RIGHT)
 
     # ------------------------ Training Section -----------------------------
     effort_levels_recalculated = [ceil(max_presses_count*(effort/100)) for effort in effort_levels]
@@ -1549,11 +1588,9 @@ def main():
 
     self_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["TI"]))
     other_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["OTRO"]))
-    group_combinations = list(itertools.product(effort_levels_recalculated, credits_levels, ["GRUPO"]))
-
+    
     shuffle(self_combinations)
     shuffle(other_combinations)
-    shuffle(group_combinations)
 
     # Testing Trials for all effort levels
     for iteration in range(practice_iterations):
@@ -1569,12 +1606,12 @@ def main():
 
     # Testing full block      
     slide(select_slide('Effort_ending'), False, K_RIGHT)
-    task(self_combinations, other_combinations, group_combinations, blocks_number, block_type, max_answer_time, test = True, decision_practice_trials = decision_practice_trials, effort_table = effort_table)
+    task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, test = True, decision_practice_trials = decision_practice_trials, effort_table = effort_table)
     slide(select_slide('Practice_ending'), False, K_RIGHT)
 
     # ------------------------ Experiment Section -----------------------------
     # Experiment Starting
-    task(self_combinations, other_combinations, group_combinations, blocks_number, block_type, max_answer_time, file = dfile, effort_table = effort_table)
+    task(self_combinations, other_combinations, blocks_number, block_type, max_answer_time, file = dfile, effort_table = effort_table)
     dfile.flush()
     slide(select_slide('farewell'), True, K_RIGHT)
     dfile.close()
